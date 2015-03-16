@@ -3,11 +3,11 @@
  *
  * French language file.
  *
- * Author: 
+ * Author: Frantz @ Wiity.net
  */
 
- theUILang.SortTorrents    = "Sort torrents by";
- theUILang.acs             = "Ascending";
- theUILang.decs            = "Descending";
+ theUILang.SortTorrents    = "Trier par torrents";
+ theUILang.acs             = "Ascendant";
+ theUILang.decs            = "Descendant";
 
 thePlugins.get("mobile").langLoaded();
