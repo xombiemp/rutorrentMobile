@@ -26,6 +26,7 @@ var pageToHash = {
   'globalSettings': 'settings',
   'torrentSort': 'sort',
   'addTorrent': 'add',
+  'searchTorrent': 'search',
   'confimTorrentDelete': 'delete',
   'getDirList': 'filesystem'
 };
@@ -173,6 +174,7 @@ plugin.createiFrame = function() {
 plugin.showPage = function(page) {
   $('.mainContainer').css('display', 'none');
   $('.torrentControl').css('display', 'none');
+  $('.generalControl').css('display', '');
   $('#' + page).css('display', '');
   this.setHash(page);
 };
@@ -351,6 +353,53 @@ plugin.addTorrent = function() {
   $('#dir_edit').width($('#addTorrentFile').outerWidth(true) - used);
 };
 
+plugin.showSearch = function() {
+  this.showPage('searchTorrent');
+};
+
+plugin.searchRun = function() {
+  $("#query").prop("readonly", true);
+  $('#queryResults').html('running');
+  var engine = encodeURIComponent($('#queryEngine').val());
+  var query = encodeURIComponent($('#query').val());
+  var cat = encodeURIComponent($('#queryCategory').val());
+  theWebUI.requestWithoutTimeout("?action=extsearch&s="+engine+"&v="+query+"&v="+cat,[theWebUI.mobilesearchGotResult, theWebUI]);
+}
+
+theWebUI.mobilesearchGotResult = function(d) {
+  $("#query").removeAttr("readonly");
+  var queryResults_html = "Got " + d.data.length + " results";
+  switch ($('#querySort').val()) {
+    case 'size_d':
+      var sortedArray = d.data.sort(function(a, b){
+        return a.size > b.size ? -1 : 1;
+      });
+      break;
+    case 'seed_d':
+      var sortedArray = d.data.sort(function(a, b) {
+        return a.seeds > b.seeds ? -1 : 1;
+      });
+      break;
+    default:
+      var sortedArray = d.data;
+      break;
+  }
+  for (var i in sortedArray) {
+    queryResults_html = queryResults_html +
+    '<div class="queryResult">' +
+    '<form action="php/addtorrent.php?" method="post" target="uploadFrame">' +
+    '<input type="hidden" id="url" name="url" value="' + sortedArray[i].link + '">' +
+    '<span class="queryResultName">' + sortedArray[i].name + '</span><br>' +
+    '<div class="queryResultSubmit"><button type="submit">Add</button></div>' +
+    '<div class="queryResultDetails">' + theConverter.bytes(sortedArray[i].size, 2) +
+    ' ' + sortedArray[i].cat + '<br>' +
+    'Seeds: ' + sortedArray[i].seeds + ' ' +
+    'Peers: ' + sortedArray[i].peers + '</div>' +
+    '</form></div>';
+  }
+  $('#queryResults').html(queryResults_html);
+}
+
 plugin.fillLabel = function(label) {
   if (this.labelInEdit) {
     return;
@@ -462,6 +511,7 @@ plugin.showDetails = function(e) {
     $('#torrentDetails select').css('max-width',diffWidth);
   }, 0);
   $('.torrentControl').css('display', '');
+  $('.generalControl').css('display', 'none');
   this.showDetailsInDetails();
 };
 
@@ -1122,7 +1172,7 @@ dxSTable.prototype.addRowById = function (ids, sId, icon, attr) { }
 dxSTable.prototype.getAttr = function (row, attrName) { }
 
   $.each(thePlugins.list, function(i, v) {
-    if (v.name != 'rpc' && v.name != 'httprpc' && v.name != '_getdir' && v.name != 'throttle' && v.name != 'ratio' && v.name != 'erasedata' && v.name != 'seedingtime' && v.name != 'mobile') {
+    if (v.name != 'rpc' && v.name != 'httprpc' && v.name != '_getdir' && v.name != 'throttle' && v.name != 'ratio' && v.name != 'erasedata' && v.name != 'seedingtime' && v.name != 'mobile' && v.name != 'extsearch') {
       v.disable();
     }
   });

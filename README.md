@@ -17,6 +17,7 @@ Optional plugins that add additional functionality:
 * seedingtime: Adds the fields Added and Finished to the torrent details page.
 * ratio: Allows you to see and set the ratio group for a torrent.
 * throttle: Allows you to see and set the channel for a torrent.
+* extsearch: Allows you to search for torrents.
 
 ### Configuration
 There are three configurable boolean options and one multi-value option that you may set at the top of init.js.

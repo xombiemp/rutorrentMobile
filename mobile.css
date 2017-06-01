@@ -1,6 +1,6 @@
 /*** General ***/
 html, body {
-  overflow: visible;
+  overflow: auto;
 }
 a, button, tr, select, input, label {
   -webkit-tap-highlight-color: transparent;
@@ -40,7 +40,9 @@ a:hover, a:focus {
 h5, #detailsTrackersPage a, #detailsFilesPage a, #detailsDetailsPage #label td, .nav a, #getDirList td {
   word-break:break-all;
 }
-
+.noty_cont{
+  display: none;
+}
 
 /*** navbar bottom ***/
 .navbar .nav > li {
@@ -54,7 +56,7 @@ h5, #detailsTrackersPage a, #detailsFilesPage a, #detailsDetailsPage #label td, 
   display: table-cell;
   vertical-align: middle;
   padding: 0;
-  font-size: 14px;
+  font-size: 30px;
   background-color: transparent;
   height: 50px;
 }
@@ -153,6 +155,29 @@ h5, #detailsTrackersPage a, #detailsFilesPage a, #detailsDetailsPage #label td, 
   height: 34px;
 }
 
+/*** Search Torrent ***/
+#query, #queryButton {
+  width: 100%;
+  height: 30px;
+  margin-bottom: 5px;
+}
+.queryResult {
+  white-space: nowrap;
+}
+.queryResultName {
+  border-top: solid thin;
+  font-weight: bold;
+}
+.queryResultSubmit {
+  padding-right: 3px;
+}
+.queryResultSubmit button {
+  height: 40px;
+}
+.queryResultSubmit, .queryResultDetails {
+  display: inline-block;
+  vertical-align: top;
+}
 
 /*** Get Dir List ***/
 #getDirList {

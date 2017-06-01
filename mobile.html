@@ -7,10 +7,13 @@
           <a id="navBack" href="javascript://void();" onclick="window.history.go(-1);"><i class="glyphicon glyphicon-arrow-left icon-white"></i></a>
         </li>
         <li>
-          <a id="navSettings" href="javascript://void();" onclick="mobile.showSettings();"><i class="glyphicon glyphicon-cog icon-white"></i></a>
+          <a id="navSettings" class="generalControl" href="javascript://void();" onclick="mobile.showSettings();"><i class="glyphicon glyphicon-cog icon-white"></i></a>
         </li>
         <li>
-          <a id="navAdd" href="javascript://void();" onclick="mobile.addTorrent();"><i class="glyphicon glyphicon-plus icon-white"></i></a>
+          <a id="navAdd" class="generalControl" href="javascript://void();" onclick="mobile.addTorrent();"><i class="glyphicon glyphicon-plus icon-white"></i></a>
+        </li>
+        <li>
+          <a id="navSearch" class="generalControl" href="javascript://void();" onclick="mobile.showSearch();"><i class="glyphicon glyphicon-search icon-white"></i></a>
         </li>
         <li class="torrentControl divider-vertical"></li>
         <li class="torrentControl">
@@ -178,6 +181,40 @@
     </form>
   </div>
   
+  <div class="mainContainer container" id="searchTorrent" style="display:none;">
+	Sort
+	<select id="querySort">
+	  <option value="seed_d" selected>Seeds (desc)</option>
+	  <option value="size_d">Size (desc)</option>
+	</select>
+	Engine
+	<select id="queryEngine">
+	  <option>ExtraTorrent</option>
+	  <option>KickAssTorrents</option>
+	  <option>Mininova</option>
+	  <option>Nyaa</option>
+	  <option>PirateBay</option>
+	  <option selected>TorrentDownloads</option>
+	  <option>TorrentReactor</option>
+	  <option>Torrentz</option>
+	</select>
+	Category
+	<select id="queryCategory">
+	  <option selected>all</option>
+	  <option>Anime</option>
+	  <option>Books</option>
+	  <option>Games</option>
+	  <option>Movies</option>
+	  <option>Music</option>
+	  <option>Software</option>
+	  <option>TV Shows</option>
+	  <option>Other</option>
+	</select>
+	<input id="query" type="text">
+	<button id="queryButton" type="button" onclick="mobile.searchRun();">Search</button>
+	<div id="queryResults"></div>
+  </div>
+
   <div class="mainContainer" id="getDirList" style="display:none;"></div>
   
   <div class="mainContainer container text-center" id="confimTorrentDelete" style="display:none;">
