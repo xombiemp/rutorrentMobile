@@ -6,8 +6,8 @@
  * Author: 
  */
 
- theUILang.SortTorrents    = "Sort torrents by";
- theUILang.acs             = "Ascending";
- theUILang.decs            = "Descending";
+ theUILang.SortTorrents    = "Ordina torrents per";
+ theUILang.acs             = "Ascendente";
+ theUILang.decs            = "Discendente";
 
 thePlugins.get("mobile").langLoaded();
