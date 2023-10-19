@@ -1153,7 +1153,7 @@ plugin.update = function(singleUpdate) {
         plugin.labelIds[l] = nextLabelId++;
       }
 
-      labelsHtml += '<li><a href="javascript://void();" onclick="mobile.filter(mobile.statusFilter.label, this, \'' + l + '\');">' + l + ' (' + theWebUI.labels['-_-_-' + l + '-_-_-'].cnt + ')</a></li>';
+      labelsHtml += '<li><a href="javascript://void();" onclick="mobile.filter(mobile.statusFilter.label, this, \'' + l + '\');">' + l + ' (' + theWebUI.labels['-_-_-dls-_-_-'].cnt + ')</a></li>';
     });
     $('#torrentsLabels ul').html(labelsHtml);
     if ($('#torrentsLabels ul').is(':visible')) {
@@ -1309,6 +1309,8 @@ plugin.disableOthers = function() {
 
     dxSTable.prototype.Sort = function(e) { }
 
+    dxSTable.prototype.getRawValue = function (row, col) { }
+
     dxSTable.prototype.createRow = function(cols, sId, icon, attr) { }
 
     dxSTable.prototype.addRow = function (cols, sId, icon, attr) { }
@@ -1320,7 +1322,9 @@ plugin.disableOthers = function() {
     dxSTable.prototype.getAttr = function (row, attrName) { }
     
     dxSTable.prototype.setAttr = function(row, attr) { }
-    
+
+    dxSTable.prototype.getIcon = function(row) { }
+
     dxSTable.prototype.setIcon = function(row, icon) { }
 
     theWebUI.filterByLabel = function() { }
