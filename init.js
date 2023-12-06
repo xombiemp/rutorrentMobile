@@ -1145,15 +1145,16 @@ plugin.update = function(singleUpdate) {
     var tdl = 0;
     var nextLabelId = 1;
     var nextTrackerId = 1;
-    var labelsHtml = '<li><a href="javascript://void();" onclick="mobile.filter(mobile.statusFilter.label, this, \'\');">' + theUILang.No_label + ' (' + theWebUI.labels['-_-_-nlb-_-_-'].cnt + ')</a></li>';
+    var labelsHtml = '<li><a href="javascript://void();" onclick="mobile.filter(mobile.statusFilter.label, this, \'\');">' + theUILang.No_label + ' (' + theWebUI.labels['-_-_-nlb-_-_-'].size + ')</a></li>';
     var trackersHtml = '';
 
     Object.keys(plugin.labels).sort().forEach(function(l) {
-      if (plugin.labelIds[l] == undefined) {
-        plugin.labelIds[l] = nextLabelId++;
+      labelProper = l.replace('clabel__', '');
+      if (plugin.labelIds[labelProper] == undefined) {
+        plugin.labelIds[labelProper] = nextLabelId++;
       }
 
-      labelsHtml += '<li><a href="javascript://void();" onclick="mobile.filter(mobile.statusFilter.label, this, \'' + l + '\');">' + l + ' (' + theWebUI.labels['-_-_-' + l + '-_-_-'].cnt + ')</a></li>';
+      labelsHtml += '<li><a href="javascript://void();" onclick="mobile.filter(mobile.statusFilter.label, this, \'' + labelProper + '\');">' + labelProper + ' (' + theWebUI.labels[l].size + ')</a></li>';
     });
     $('#torrentsLabels ul').html(labelsHtml);
     if ($('#torrentsLabels ul').is(':visible')) {
