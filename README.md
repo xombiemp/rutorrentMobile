@@ -1,5 +1,8 @@
 ## ruTorrent Mobile Plugin
 
+### Prereqs
+This plugin requires the httprpc plugin.
+
 ### Installation
 Place all the plugin files in a directory called mobile in the rutorrent/plugins directory.
 To clone directly from this git repository, run this command in the rutorrent/plugins directory:
@@ -39,6 +42,7 @@ If you set plugin.enableAutodetect to true, the plugin will automaticaly load wh
 
 ### Troubleshooting
 If you are experiencing problems with this plugin, for example it's not scrolling or there are overlapping elements, try these solutions.
+* Make sure the httprpc plugin is installed. The mobile plugin requires it.
 * Make sure the plugin directory is named 'mobile' or else it won't load the plugin specific css file called mobile.css
 * Make sure you don't have the ipad plugin installed. The ipad plugin will make it so you can't scroll in the mobile plugin.
 * If you are still having issues, submit an issue on github https://github.com/xombiemp/rutorrentMobile/issues and be sure to include as much detail as possible including: mobile device and OS and browser, server OS and webserver.
