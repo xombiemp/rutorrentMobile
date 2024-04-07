@@ -9,7 +9,6 @@ plugin.statusFilter = {downloading: 1, completed: 2, label: 4, all: 3, tracker: 
 plugin.navFilter = undefined;
 plugin.torrents = null;
 plugin.torrentsPrev = null;
-plugin.labels = null;
 plugin.torrent = undefined;
 plugin.lastHref = "";
 plugin.scrollTop = 0;
@@ -1134,7 +1133,6 @@ plugin.update = function(singleUpdate) {
   theWebUI.requestWithTimeout("?list=1&getmsg=1",
   function(data) {
     plugin.torrents = data.torrents;
-    plugin.labels = theWebUI.cLabels;
     plugin.labelIds = {};
     plugin.trackerIds = {};
     plugin.labelIds[''] = 0;
@@ -1145,17 +1143,20 @@ plugin.update = function(singleUpdate) {
     var tdl = 0;
     var nextLabelId = 1;
     var nextTrackerId = 1;
-    var labelsHtml = '<li><a href="javascript://void();" onclick="mobile.filter(mobile.statusFilter.label, this, \'\');">' + theUILang.No_label + ' (' + theWebUI.labels['-_-_-nlb-_-_-'].size + ')</a></li>';
+    var labelsHtml = '<li><a href="javascript://void();" onclick="mobile.filter(mobile.statusFilter.label, this, \'\');">' + theUILang.No_label + ' (' + theWebUI.categoryList.panelLabelAttribs.plabel.get("-_-_-nlb-_-_-").count + ')</a></li>';
     var trackersHtml = '';
 
-    Object.keys(plugin.labels).sort().forEach(function(l) {
-      labelProper = l.replace('clabel__', '');
-      if (plugin.labelIds[labelProper] == undefined) {
-        plugin.labelIds[labelProper] = nextLabelId++;
-      }
+    for (l of theWebUI.categoryList.panelLabelAttribs.plabel.keys()) {
+      if (l.startsWith("clabel")) {
+        labelProper = l.replace('clabel__', '');
+        if (plugin.labelIds[labelProper] == undefined) {
+          plugin.labelIds[labelProper] = nextLabelId++;
+        }
 
-      labelsHtml += '<li><a href="javascript://void();" onclick="mobile.filter(mobile.statusFilter.label, this, \'' + labelProper + '\');">' + labelProper + ' (' + theWebUI.labels[l].size + ')</a></li>';
-    });
+        labelsHtml += '<li><a href="javascript://void();" onclick="mobile.filter(mobile.statusFilter.label, this, \'' + labelProper + '\');">' + labelProper + ' (' + theWebUI.categoryList.panelLabelAttribs.plabel.get(l).count + ')</a></li>';
+      }
+    }
+
     $('#torrentsLabels ul').html(labelsHtml);
     if ($('#torrentsLabels ul').is(':visible')) {
       plugin.updateLabelDropdown();
@@ -1325,6 +1326,8 @@ plugin.disableOthers = function() {
     dxSTable.prototype.setIcon = function(row, icon) { }
 
     theWebUI.filterByLabel = function() { }
+
+    theWebUI.loadTorrents = function() { }
 
     $.each(thePlugins.list, function(i, v) {
       if (v.name != 'rpc' && v.name != 'httprpc' && v.name != '_getdir' && v.name != 'throttle' && v.name != 'ratio' && v.name != 'erasedata' && v.name != 'seedingtime' && v.name != 'mobile') {
