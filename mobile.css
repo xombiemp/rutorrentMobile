@@ -104,6 +104,7 @@ h5, #detailsTrackersPage a, #detailsFilesPage a, #detailsDetailsPage #label td, 
 }
 #torrentsList .nav > li > a {
   margin-right: 1px;
+  font-size: 11px;
 }
 #torrentsList .nav > li > a > span {
   float: left;
