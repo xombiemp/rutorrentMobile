@@ -43,7 +43,7 @@ a:hover, a:focus {
 }
 #mainContainer {
   background-color: #fff;
-  padding: 45px 3px 86px 3px;
+  padding: 45px 3px calc(66px + env(safe-area-inset-bottom, 0px)) 3px;
   margin: 0;
 }
 .progress .progress-bar {
@@ -59,6 +59,11 @@ h5, #detailsTrackersPage a, #detailsFilesPage a, #detailsDetailsPage #label td, 
 
 
 /*** navbar bottom ***/
+/* Keep the buttons clear of the iOS home indicator on devices that have
+   one; on other devices the inset is 0 and the bar stays compact */
+.navbar-fixed-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
 .navbar .container {
   padding-left: 20px;
   padding-right: 20px;
@@ -73,10 +78,10 @@ h5, #detailsTrackersPage a, #detailsFilesPage a, #detailsDetailsPage #label td, 
 .navbar .nav > li > a, .navbar .nav > li > a:hover, .navbar .nav > li > a:focus {
   display: table-cell;
   vertical-align: middle;
-  padding: 0px 0px 20px 0px;
+  padding: 0;
   font-size: 20px;
   background-color: transparent;
-  height: 85px;
+  height: 65px;
 }
 .navbar .nav > li > div > span {
   position: relative;
@@ -90,7 +95,7 @@ h5, #detailsTrackersPage a, #detailsFilesPage a, #detailsDetailsPage #label td, 
   font-size: 17px;
 }
 .navbar .divider-vertical {
-  height: 85px;
+  height: 65px;
   margin: 0 15px 0 0;
   border-right: 1px solid #323232;
   border-left: 1px solid #111111;

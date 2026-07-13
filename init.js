@@ -1713,6 +1713,9 @@ plugin.init = function() {
       plugin.loadCSS('css/bootstrap.min');
       plugin.loadMainCSS();
       $('head').append('<meta name="apple-mobile-web-app-capable" content="yes" />');
+      // viewport-fit=cover is required for env(safe-area-inset-*) to report
+      // the home-indicator inset on iOS
+      $('meta[name=viewport]').attr('content', 'width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, viewport-fit=cover');
       if (plugin.bootstrapJS)
       injectScript(plugin.path+'js/bootstrap.min.js');
 
