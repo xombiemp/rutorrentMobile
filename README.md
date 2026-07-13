@@ -34,7 +34,7 @@ false by default. This option sets the default state of the delete with data che
 If in rutorrent you turned off 'Confirm when deleting torrents', this plugin will not display the confirmaion page either. In this case, the decision about deleting data will be determined by the value of this option.
 
 #### plugin.sort
-'name' by default. Possible values: 'name', '-name', 'size', '-size', 'uploaded', '-uploaded', 'downloaded', '-downloaded', 'done', '-done', 'eta', '-eta', 'ul', '-ul', 'dl', '-dl', 'ratio', '-ratio', and if the seedingtime plugin is loaded 'addtime', '-addtime', 'seedingtime', '-seedingtime'.  
+'name' by default. Possible values: 'name', '-name', 'status', '-status', 'size', '-size', 'uploaded', '-uploaded', 'downloaded', '-downloaded', 'done', '-done', 'eta', '-eta', 'ul', '-ul', 'dl', '-dl', 'ratio', '-ratio', and if the seedingtime plugin is loaded 'addtime', '-addtime', 'seedingtime', '-seedingtime'.  
 This option sets the default sort value of the torrent list. Without negative it's ascending, with negative it's descending.
 
 ### Utilization

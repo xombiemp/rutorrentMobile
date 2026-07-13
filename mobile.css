@@ -112,22 +112,6 @@ h5, #detailsTrackersPage a, #detailsFilesPage a, #detailsDetailsPage #label td, 
 #torrentsList .nav > li > a {
   margin-right: 1px;
 }
-#torrentsList .nav > li > a > span {
-  float: left;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-#torrentsList .nav > li > a > .caret {
-  position: relative;
-  display: inline;
-  top: 13px;
-}
-.nav-tabs .open .dropdown-toggle {
-  color: #fff !important;
-  background-color: #999 !important;
-  border-color: #999 !important;
-}
 .nav-tabs > li > a:hover, .nav-tabs > li > a:focus {
   background-color: transparent;
   border-color: transparent;
@@ -143,6 +127,36 @@ h5, #detailsTrackersPage a, #detailsFilesPage a, #detailsDetailsPage #label td, 
 }
 .nav-tabs #refresh #refreshIcon i {
   color: #428bca;
+}
+.nav-tabs #torrentsFilter {
+  float: none;
+  overflow: hidden;
+}
+.nav-tabs #torrentsFilter > a {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.nav-tabs #torrentsFilter > a > i {
+  color: #428bca;
+  margin-right: 6px;
+}
+
+
+/*** Torrent Filter ***/
+#torrentFilter {
+  margin-top: -20px;
+}
+#torrentFilter h5 {
+  font-weight: bold;
+  margin-top: 15px;
+}
+#torrentFilter .list-group {
+  margin-bottom: 10px;
+}
+#filterButtons {
+  margin-bottom: 5px;
 }
 
 
@@ -181,8 +195,49 @@ h5, #detailsTrackersPage a, #detailsFilesPage a, #detailsDetailsPage #label td, 
 #addTorrent {
   margin-top: -20px;
 }
-#addTorrent #showGetDir {
+#addTorrent #showGetDir, #torrentDataDir #showGetDirDataDir {
   height: 34px;
+}
+#addTorrent #labelBlock #taddReturnSelect {
+  margin-top: 5px;
+}
+
+
+/*** Torrent Data Directory ***/
+#torrentDataDir {
+  margin-top: -20px;
+}
+#torrentDataDir h5 {
+  font-weight: bold;
+  margin-top: 15px;
+}
+
+
+/*** Peer Actions ***/
+#peerActions {
+  margin: 8px 0;
+}
+#peerActions #peerAddBlock {
+  margin-bottom: 8px;
+}
+#peersTable tbody tr {
+  cursor: pointer;
+}
+
+
+/*** Tracker Actions ***/
+#detailsTrackersPage #updateTrackersBtn {
+  margin: 8px 0;
+}
+
+
+/*** Server Info ***/
+#globalSettings #serverInfoHeader {
+  font-weight: bold;
+  margin-top: 20px;
+}
+#globalSettings #diskSpaceBar {
+  margin-bottom: 5px;
 }
 
 

@@ -40,42 +40,14 @@
   
   <div class="mainContainer" id="torrentsList">
     <ul class="nav nav-tabs">
-      <li id="torrentsStatus" class="dropdown">
-        <a href="javascript://void();" class="dropdown-toggle" data-toggle="dropdown"><span></span><b class="caret"></b></a>
-        <ul class="dropdown-menu pull-left">
-          <li id="torrentsAll">
-            <a href="javascript://void();" onclick="mobile.filter(mobile.statusFilter.all, this);"></a>
-          </li>
-          <li id="torrentsDownloading">
-            <a href="javascript://void();" onclick="mobile.filter(mobile.statusFilter.downloading, this);"></a>
-          </li>
-          <li id="torrentsCompleted">
-            <a href="javascript://void();" onclick="mobile.filter(mobile.statusFilter.completed, this);"></a>
-          </li>
-          <li id="torrentsActive">
-            <a href="javascript://void();" onclick="mobile.filter(mobile.statusFilter.active, this);"></a>
-          </li>
-          <li id="torrentsInactive">
-            <a href="javascript://void();" onclick="mobile.filter(mobile.statusFilter.inactive, this);"></a>
-          </li>
-          <li id="torrentsError">
-            <a href="javascript://void();" onclick="mobile.filter(mobile.statusFilter.error, this);"></a>
-          </li>
-        </ul>
-      </li>
-      <li id="torrentsLabels" class="dropdown">
-        <a href="javascript://void();" class="dropdown-toggle" data-toggle="dropdown"><span></span><b class="caret"></b></a>
-        <ul class="dropdown-menu pull-left"></ul>
-      </li>
-      <li id="torrentsTrackers" class="dropdown">
-        <a href="javascript://void();" class="dropdown-toggle" data-toggle="dropdown"><span></span><b class="caret"></b></a>
-        <ul class="dropdown-menu pull-right"></ul>
-      </li>
       <li id="sort">
         <a id="sortIcon" href="javascript://void();" onclick="mobile.showSort();"><i class="glyphicon glyphicon-sort icon-black"></i></a>
       </li>
       <li id="refresh">
         <a id="refreshIcon" href="javascript://void();" onclick="mobile.refresh();"><i class="glyphicon glyphicon-refresh icon-black"></i></a>
+      </li>
+      <li id="torrentsFilter">
+        <a href="javascript://void();" onclick="mobile.showFilter();"><i class="glyphicon glyphicon-filter"></i><span></span></a>
       </li>
     </ul>
     <div id="list"><table class="table table table-striped"><tbody></tbody></table></div>
@@ -122,13 +94,27 @@
         <tr id="seeds"><td></td><td></td></tr>
         <tr id="peers"><td></td><td></td></tr>
         <tr id="savePath"><td></td><td></td></tr>
+        <tr id="freeDiskSpace"><td></td><td></td></tr>
+        <tr id="hash"><td></td><td></td></tr>
         <tr id="comment"><td></td><td></td></tr>
+        <tr id="trackerUrl"><td></td><td></td></tr>
         <tr id="trackerStatus"><td></td><td></td></tr>
       </tbody>
     </table>
     <div class="detailsPage" id="detailsTrackersPage"></div>
     <div class="detailsPage" id="detailsFilesPage"></div>
     <div class="detailsPage" id="detailsPeersPage">
+      <div id="peerActions">
+        <div class="input-append" id="peerAddBlock">
+          <input type="text" id="peerIp" class="form-control pull-left">
+          <button type="button" id="peerAddBtn" class="btn btn-default"></button>
+        </div>
+        <div id="peerRowActions">
+          <button type="button" id="peerBanBtn" class="btn btn-default" disabled></button>
+          <button type="button" id="peerKickBtn" class="btn btn-default" disabled></button>
+          <button type="button" id="peerSnubBtn" class="btn btn-default" disabled></button>
+        </div>
+      </div>
       <div class="table-responsive tableFixHead">
         <table class="table table-sm table-striped table-scroll" id="peersTable">
           <thead>
@@ -164,6 +150,19 @@
     <button id="sortCancel" onclick="history.go(-1);" class="btn btn-default"></button>
   </div>
   
+  <div class="mainContainer container" id="torrentFilter" style="display:none;">
+    <div id="filterButtons">
+      <button id="filterDone" onclick="history.go(-1);" class="btn btn-primary"></button>
+      <button id="filterClear" onclick="mobile.clearFilters();" class="btn btn-default"></button>
+    </div>
+    <h5 id="filterStatusHeader"></h5>
+    <div class="list-group" id="filterStatusList"></div>
+    <h5 id="filterLabelsHeader"></h5>
+    <div class="list-group" id="filterLabelsList"></div>
+    <h5 id="filterTrackersHeader"></h5>
+    <div class="list-group" id="filterTrackersList"></div>
+  </div>
+  
   <div class="mainContainer container" id="globalSettings" style="display:none;">
     <div class="form-group">
       <label class="select" for="dlLimit"><h5></h5></label>
@@ -173,6 +172,20 @@
       <label class="select" for="ulLimit"><h5></h5></label>
       <select id="ulLimit" class="form-control"></select>
     </div>
+    <h5 id="serverInfoHeader"></h5>
+    <table class="table table-striped" id="serverInfo">
+      <tbody>
+        <tr id="verRutorrent"><td></td><td></td></tr>
+        <tr id="verRtorrent"><td></td><td></td></tr>
+        <tr id="portIpv4" style="display:none;"><td></td><td></td></tr>
+        <tr id="portIpv6" style="display:none;"><td></td><td></td></tr>
+        <tr id="openStatus" style="display:none;"><td></td><td></td></tr>
+        <tr id="diskSpace" style="display:none;"><td></td><td>
+          <div class="progress" id="diskSpaceBar"><div class="progress-bar"></div></div>
+          <span id="diskSpaceText"></span>
+        </td></tr>
+      </tbody>
+    </table>
   </div>
   
   <div class="mainContainer container" id="addTorrent" style="display:none;">
@@ -192,21 +205,43 @@
       <div class="checkbox">
         <label id='randomizeHash'><input type="checkbox" name="randomize_hash" id="randomize_hash"></label>
       </div>
-      <input class="form-control" type="text" id="tadd_label" name="tadd_label" placeholder="Label">
+      <div id="labelBlock">
+        <select id="tadd_label_select" class="form-control"></select>
+        <input class="form-control" type="text" id="tadd_label" name="tadd_label" placeholder="Label" style="display:none;">
+        <button type="button" id="taddReturnSelect" class="btn btn-default" style="display:none;"></button>
+      </div>
       <hr>
       <div class="form-group">
         <label class="control-label" for="torrent_file" id="torrentFile"></label>
-        <input type="file" name="torrent_file" id="torrent_file">
+        <input type="file" name="torrent_file[]" id="torrent_file" multiple accept=".torrent">
       </div>
-      <button type="submit" class="btn btn-primary" id='torrentFileSend'></button>
+      <button type="submit" class="btn btn-primary" id='torrentFileSend' disabled></button>
     </form>
     <hr>
     <form action="php/addtorrent.php?" id="addTorrentUrl" method="post" target="uploadFrame">
       <div class="form-group">
-        <input type="url" id="url" name="url" class="form-control" placeholder="Torrent URL">
+        <textarea id="url" name="url" class="form-control" rows="4"></textarea>
       </div>
-      <button type="submit" id="addUrl" class="btn btn-primary"></button>
+      <button type="submit" id="addUrl" class="btn btn-primary" disabled></button>
     </form>
+  </div>
+  
+  <div class="mainContainer container" id="torrentDataDir" style="display:none;">
+    <h5 id="dataDirHeader"></h5>
+    <div class="input-append" id="dataDirEditBlock">
+      <input type="text" id="datadir_edit" class="form-control pull-left">
+    </div>
+    <div class="checkbox">
+      <label id="dataDirAddPath"><input type="checkbox" id="datadir_not_add_path"></label>
+    </div>
+    <div class="checkbox">
+      <label id="dataDirMove"><input type="checkbox" id="datadir_move"></label>
+    </div>
+    <div class="checkbox">
+      <label id="dataDirFastResume"><input type="checkbox" id="datadir_fastresume"></label>
+    </div>
+    <button id="dataDirOk" onclick="mobile.sendDataDir();" class="btn btn-primary"></button>
+    <button id="dataDirCancel" onclick="history.go(-1);" class="btn btn-default"></button>
   </div>
   
   <div class="mainContainer" id="getDirList" style="display:none;"></div>
