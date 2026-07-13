@@ -1,4 +1,4 @@
-plugin.description: This plugin provides a mobile version of ruTorrent. (Not compatible with the ipad plugin)
+plugin.description: This plugin provides a mobile version of ruTorrent.
 plugin.author: zebraxxl,xombiemp
 plugin.version: 1.0
 rtorrent.need: 1

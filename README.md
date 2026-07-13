@@ -11,8 +11,7 @@ git clone https://github.com/xombiemp/rutorrentMobile.git mobile
 
 ```
 
-> **Note:** It is important that the plugin directory is named 'mobile' so that the supporting files are loaded correctly.  
-> **Warning:** This plugin is not compatible with the ipad plugin.
+> **Note:** It is important that the plugin directory is named 'mobile' so that the supporting files are loaded correctly.
 
 Optional plugins that add additional functionality:
 * _getdir: Allows you to browse directories from your server when adding a torrent.
@@ -44,5 +43,4 @@ If you set plugin.enableAutodetect to true, the plugin will automaticaly load wh
 If you are experiencing problems with this plugin, for example it's not scrolling or there are overlapping elements, try these solutions.
 * Make sure the httprpc plugin is installed. The mobile plugin requires it.
 * Make sure the plugin directory is named 'mobile' or else it won't load the plugin specific css file called mobile.css
-* Make sure you don't have the ipad plugin installed. The ipad plugin will make it so you can't scroll in the mobile plugin.
 * If you are still having issues, submit an issue on github https://github.com/xombiemp/rutorrentMobile/issues and be sure to include as much detail as possible including: mobile device and OS and browser, server OS and webserver.
