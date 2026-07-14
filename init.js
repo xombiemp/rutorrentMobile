@@ -1502,9 +1502,11 @@ plugin.processTorrents = function(torrents, singleUpdate) {
 
     $.each(torrentArray, function(n, v){
       var status = [null, v.status];
-      // Mirrors the desktop state panel grouping (see js/category-list.js)
+      // Mirrors the desktop state panel grouping (see js/category-list.js),
+      // except that any transfer counts as active (the desktop ignores
+      // rates below 1 KiB/s)
       var statusClass = (v.done >= 1000) ? 'Completed' : ((v.state & dStatus.paused) || !(v.state & dStatus.started)) ? 'Stopped' : 'Downloading';
-      var stateClass = (v.state & dStatus.started) ? ((v.dl >= 1024 || v.ul >= 1024) ? 'Active' : 'Inactive') : 'None';
+      var stateClass = (v.state & dStatus.started) ? ((v.dl > 0 || v.ul > 0) ? 'Active' : 'Inactive') : 'None';
       var errorClass = (v.state & dStatus.error) ? 'Yes' : 'No';
       var percent = v.done / 10;
 
