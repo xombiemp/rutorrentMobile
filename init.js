@@ -2,7 +2,7 @@
 plugin.enableAutodetect = true;
 plugin.tabletsDetect = true;
 plugin.eraseWithDataDefault = false;
-plugin.sort = '-addtime'; /* 'name', 'status', 'size', 'uploaded', 'downloaded', 'done', 'eta', 'ul', 'dl', 'ratio', and with the seedingtime plugin 'addtime', 'seedingtime'. Add preceding negative for descending sort. */
+plugin.sort = 'name'; /* 'name', 'status', 'size', 'uploaded', 'downloaded', 'done', 'eta', 'ul', 'dl', 'ratio', and with the seedingtime plugin 'addtime', 'seedingtime'. Add preceding negative for descending sort. */
 plugin.accentColor = 'primary'; /* Bootstrap theme color for buttons, progress bars and highlights: 'primary' (blue), 'secondary' (gray), 'success' (green), 'danger' (red), 'warning' (yellow), 'info' (cyan) or 'dark' (near-black). */
 /*** End Configurable Options ***/
 
@@ -464,6 +464,22 @@ plugin.showSettings = function() {
   });
 };
 
+plugin.currentAccent = 'primary';
+
+plugin.applyAccentColor = function(color) {
+  if (color == 'primary') {
+    document.documentElement.style.removeProperty('--mobile-accent');
+    document.documentElement.style.removeProperty('--mobile-accent-rgb');
+  } else {
+    document.documentElement.style.setProperty('--mobile-accent', 'var(--bs-' + color + ')');
+    document.documentElement.style.setProperty('--mobile-accent-rgb', 'var(--bs-' + color + '-rgb)');
+  }
+  if (color != plugin.currentAccent) {
+    $('.btn-' + plugin.currentAccent).addClass('btn-' + color).removeClass('btn-' + plugin.currentAccent);
+  }
+  plugin.currentAccent = color;
+};
+
 plugin.renderOpenStatus = function(d) {
   if (d && d.http > -1) {
     $('#openStatus').css('display', '');
@@ -471,8 +487,29 @@ plugin.renderOpenStatus = function(d) {
   }
 };
 
+plugin.accentColors = [
+  ['primary', 'Blue'], ['secondary', 'Gray'], ['success', 'Green'], ['danger', 'Red'],
+  ['warning', 'Yellow'], ['info', 'Cyan'], ['dark', 'Near-black']
+];
+
+// Try-before-you-buy accent switcher; not persisted, a reload reverts
+// to the configured plugin.accentColor
+plugin.loadAccentSelect = function() {
+  var sel = $('#accentSelect').empty();
+  $.each(this.accentColors, function(i, c) {
+    // The colored swatch shows in the option list where the browser
+    // supports styled options (iOS's native picker does not)
+    sel.append($('<option></option>').attr('value', c[0])
+      .css('color', 'var(--bs-' + c[0] + ')')
+      .text('\u25cf ' + c[1] + ' (' + c[0] + ')'));
+  });
+  sel.val(this.currentAccent);
+  sel.css('color', 'var(--bs-' + this.currentAccent + ')');
+};
+
 // Server details akin to the desktop status bar
 plugin.loadServerInfo = function() {
+  this.loadAccentSelect();
   $('#verRutorrent td:last').text('v' + theWebUI.version);
   var rt = theWebUI.systemInfo.rTorrent;
   $('#verRtorrent td:last').text(rt.started ? (rt.version + '/' + rt.libVersion) : '?');
@@ -1229,7 +1266,7 @@ plugin.drawGetDir = function(path, first) {
     success: function(data) {
       var container = $('#getDirList').empty();
       container.append($('<h5></h5>').text(data.path));
-      container.append($('<button class="btn btn-' + plugin.accentColor + '"></button>').text(theUILang.ok).click(function() {mobile.chooseGetDir(data.path);}));
+      container.append($('<button class="btn btn-' + plugin.currentAccent + '"></button>').text(theUILang.ok).click(function() {mobile.chooseGetDir(data.path);}));
       container.append($('<button class="btn btn-outline-secondary"></button>').text(theUILang.Cancel).click(function() {history.go(-1);}));
 
       var tbody = $('<tbody></tbody>');
@@ -1769,11 +1806,7 @@ plugin.init = function() {
       // The mobile UI is designed for the light scheme
       $('html').attr('data-bs-theme', 'light');
       // Apply the configured accent color (see plugin.accentColor at the top)
-      if (plugin.accentColor != 'primary') {
-        document.documentElement.style.setProperty('--mobile-accent', 'var(--bs-' + plugin.accentColor + ')');
-        document.documentElement.style.setProperty('--mobile-accent-rgb', 'var(--bs-' + plugin.accentColor + '-rgb)');
-        $('.btn-primary').addClass('btn-' + plugin.accentColor).removeClass('btn-primary');
-      }
+      plugin.applyAccentColor(plugin.accentColor);
       plugin.loadLang();
       plugin.loadMainCSS();
       $('head').append('<meta name="apple-mobile-web-app-capable" content="yes" />');
@@ -1788,6 +1821,10 @@ plugin.init = function() {
 
       $('#dlLimit').change(function(){plugin.setDLLimit();});
       $('#ulLimit').change(function(){plugin.setULLimit();});
+      $('#accentSelect').change(function(){
+        plugin.applyAccentColor(this.value);
+        $(this).css('color', 'var(--bs-' + this.value + ')');
+      });
 
       $('input[id=torrent_file]').change(function() {
         $('#torrentFileName').val($(this).val());
@@ -1972,6 +2009,7 @@ plugin.onLangLoaded = function() {
 
   $('#dlLimit').parent().children('label').children('h5').text(theUILang.Glob_max_downl);
   $('#ulLimit').parent().children('label').children('h5').text(theUILang.Global_max_upl);
+  $('#accentSelect').parent().children('label').children('h5').text('Accent color');
   $('#serverInfoHeader').text('Server');
   $('#verRutorrent td:first').text('ruTorrent');
   $('#verRtorrent td:first').text('rTorrent');
