@@ -4,34 +4,34 @@
     <div class="container">
       <ul class="nav navbar-inverse">
         <li>
-          <a id="navBack" href="javascript://void();" onclick="window.history.go(-1);"><i class="glyphicon glyphicon-arrow-left icon-white"></i></a>
+          <a id="navBack" href="javascript://void();" onclick="window.history.go(-1);"><i class="bi bi-arrow-left icon-white"></i></a>
         </li>
         <li>
-          <a id="navSettings" href="javascript://void();" onclick="mobile.showSettings();"><i class="glyphicon glyphicon-cog icon-white"></i></a>
+          <a id="navSettings" href="javascript://void();" onclick="mobile.showSettings();"><i class="bi bi-gear icon-white"></i></a>
         </li>
         <li>
-          <a id="navAdd" href="javascript://void();" onclick="mobile.addTorrent();"><i class="glyphicon glyphicon-plus icon-white"></i></a>
+          <a id="navAdd" href="javascript://void();" onclick="mobile.addTorrent();"><i class="bi bi-plus-lg icon-white"></i></a>
         </li>
         <li class="torrentControl divider-vertical"></li>
         <li class="torrentControl">
-          <a id="torrentStart" href="javascript://void();" onclick="mobile.start();"><i class="glyphicon glyphicon-play icon-white"></i></a>
+          <a id="torrentStart" href="javascript://void();" onclick="mobile.start();"><i class="bi bi-play-fill icon-white"></i></a>
         </li>
         <li class="torrentControl">
-          <a id="torrentStop" href="javascript://void();" onclick="mobile.stop();"><i class="glyphicon glyphicon-stop icon-white"></i></a>
+          <a id="torrentStop" href="javascript://void();" onclick="mobile.stop();"><i class="bi bi-stop-fill icon-white"></i></a>
         </li>
         <li class="torrentControl">
-          <a id="torrentPause" href="javascript://void();" onclick="mobile.pause();"><i class="glyphicon glyphicon-pause icon-white"></i></a>
+          <a id="torrentPause" href="javascript://void();" onclick="mobile.pause();"><i class="bi bi-pause-fill icon-white"></i></a>
         </li>
         <li class='torrentControl'>
-          <a id="torrentDelete" href="javascript://void();" onclick="mobile.delete();"><i class="glyphicon glyphicon-trash icon-white"></i></a>
+          <a id="torrentDelete" href="javascript://void();" onclick="mobile.delete();"><i class="bi bi-trash icon-white"></i></a>
         </li>
         <li class="divider-vertical"></li>
         <li>
           <div>
-            <i class="glyphicon glyphicon-upload icon-white"></i><span id="upspeed"></span>
+            <i class="bi bi-upload icon-white"></i><span id="upspeed"></span>
           </div>
           <div>
-            <i class="glyphicon glyphicon-download icon-white"></i><span id="downspeed"></span>
+            <i class="bi bi-download icon-white"></i><span id="downspeed"></span>
           </div>
         </li>
       </ul>
@@ -41,13 +41,13 @@
   <div class="mainContainer" id="torrentsList">
     <ul class="nav nav-tabs">
       <li id="sort">
-        <a id="sortIcon" href="javascript://void();" onclick="mobile.showSort();"><i class="glyphicon glyphicon-sort icon-black"></i></a>
+        <a id="sortIcon" href="javascript://void();" onclick="mobile.showSort();"><i class="bi bi-arrow-down-up icon-black"></i></a>
       </li>
       <li id="refresh">
-        <a id="refreshIcon" href="javascript://void();" onclick="mobile.refresh();"><i class="glyphicon glyphicon-refresh icon-black"></i></a>
+        <a id="refreshIcon" href="javascript://void();" onclick="mobile.refresh();"><i class="bi bi-arrow-clockwise icon-black"></i></a>
       </li>
       <li id="torrentsFilter">
-        <a href="javascript://void();" onclick="mobile.showFilter();"><i class="glyphicon glyphicon-filter"></i><span></span></a>
+        <a href="javascript://void();" onclick="mobile.showFilter();"><i class="bi bi-funnel"></i><span></span></a>
       </li>
     </ul>
     <div id="list"><table class="table table table-striped"><tbody></tbody></table></div>
@@ -107,12 +107,12 @@
       <div id="peerActions">
         <div class="input-append" id="peerAddBlock">
           <input type="text" id="peerIp" class="form-control pull-left">
-          <button type="button" id="peerAddBtn" class="btn btn-default"></button>
+          <button type="button" id="peerAddBtn" class="btn btn-outline-secondary"></button>
         </div>
         <div id="peerRowActions">
-          <button type="button" id="peerBanBtn" class="btn btn-default" disabled></button>
-          <button type="button" id="peerKickBtn" class="btn btn-default" disabled></button>
-          <button type="button" id="peerSnubBtn" class="btn btn-default" disabled></button>
+          <button type="button" id="peerBanBtn" class="btn btn-outline-secondary" disabled></button>
+          <button type="button" id="peerKickBtn" class="btn btn-outline-secondary" disabled></button>
+          <button type="button" id="peerSnubBtn" class="btn btn-outline-secondary" disabled></button>
         </div>
       </div>
       <div class="table-responsive tableFixHead">
@@ -140,20 +140,20 @@
   <div class="mainContainer container" id="torrentSort" style="display:none;">
     <div class="form-group">
       <label class="select" for="sortOption"><h5></h5></label>
-      <select id="sortOption" class="form-control"></select>
+      <select id="sortOption" class="form-select"></select>
       <div class="radio">
-        <label id="sortAsc" class="radio-inline"><input type="radio" name="inlineRadioOptions" id="sort_asc" value=""><i class="glyphicon glyphicon-sort-by-attributes icon-black"></i></label>
-        <label id="sortDesc" class="radio-inline"><input type="radio" name="inlineRadioOptions" id="sort_desc" value="-"><i class="glyphicon glyphicon-sort-by-attributes-alt icon-black"></i></label>
+        <label id="sortAsc" class="radio-inline"><input type="radio" name="inlineRadioOptions" id="sort_asc" value=""><i class="bi bi-sort-down-alt icon-black"></i></label>
+        <label id="sortDesc" class="radio-inline"><input type="radio" name="inlineRadioOptions" id="sort_desc" value="-"><i class="bi bi-sort-down icon-black"></i></label>
       </div>
     </div>
     <button id="sortOk" onclick="mobile.setSort();" class="btn btn-primary"></button>
-    <button id="sortCancel" onclick="history.go(-1);" class="btn btn-default"></button>
+    <button id="sortCancel" onclick="history.go(-1);" class="btn btn-outline-secondary"></button>
   </div>
   
   <div class="mainContainer container" id="torrentFilter" style="display:none;">
     <div id="filterButtons">
       <button id="filterDone" onclick="history.go(-1);" class="btn btn-primary"></button>
-      <button id="filterClear" onclick="mobile.clearFilters();" class="btn btn-default"></button>
+      <button id="filterClear" onclick="mobile.clearFilters();" class="btn btn-outline-secondary"></button>
     </div>
     <h5 id="filterStatusHeader"></h5>
     <div class="list-group" id="filterStatusList"></div>
@@ -166,11 +166,11 @@
   <div class="mainContainer container" id="globalSettings" style="display:none;">
     <div class="form-group">
       <label class="select" for="dlLimit"><h5></h5></label>
-      <select id="dlLimit" class="form-control"></select>
+      <select id="dlLimit" class="form-select"></select>
     </div>
     <div class="form-group">
       <label class="select" for="ulLimit"><h5></h5></label>
-      <select id="ulLimit" class="form-control"></select>
+      <select id="ulLimit" class="form-select"></select>
     </div>
     <h5 id="serverInfoHeader"></h5>
     <table class="table table-striped" id="serverInfo">
@@ -206,9 +206,9 @@
         <label id='randomizeHash'><input type="checkbox" name="randomize_hash" id="randomize_hash"></label>
       </div>
       <div id="labelBlock">
-        <select id="tadd_label_select" class="form-control"></select>
+        <select id="tadd_label_select" class="form-select"></select>
         <input class="form-control" type="text" id="tadd_label" name="tadd_label" placeholder="Label" style="display:none;">
-        <button type="button" id="taddReturnSelect" class="btn btn-default" style="display:none;"></button>
+        <button type="button" id="taddReturnSelect" class="btn btn-outline-secondary" style="display:none;"></button>
       </div>
       <hr>
       <div class="form-group">
@@ -241,7 +241,7 @@
       <label id="dataDirFastResume"><input type="checkbox" id="datadir_fastresume"></label>
     </div>
     <button id="dataDirOk" onclick="mobile.sendDataDir();" class="btn btn-primary"></button>
-    <button id="dataDirCancel" onclick="history.go(-1);" class="btn btn-default"></button>
+    <button id="dataDirCancel" onclick="history.go(-1);" class="btn btn-outline-secondary"></button>
   </div>
   
   <div class="mainContainer" id="getDirList" style="display:none;"></div>
@@ -249,7 +249,7 @@
   <div class="mainContainer container text-center" id="confimTorrentDelete" style="display:none;">
     <h5></h5>
     <button id="deleteOk" onclick="mobile.deleteConfimed();" class="btn btn-primary"></button>
-    <button id="deleteCancel" onclick="history.go(-1);" class="btn btn-default"></button>
+    <button id="deleteCancel" onclick="history.go(-1);" class="btn btn-outline-secondary"></button>
   </div>
   
   <div id="alert_placeholder"></div>

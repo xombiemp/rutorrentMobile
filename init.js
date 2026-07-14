@@ -24,8 +24,6 @@ plugin.ratioGroupsLoaded = false;
 plugin.throttleLoaded = false;
 plugin.seedingtimeLoaded = false;
 plugin.getDirLoaded = false;
-plugin.bootstrapJS = false;
-
 var pageToHash = {
   'torrentsList': '',
   'torrentDetails': 'details',
@@ -201,9 +199,9 @@ plugin.setHash = function(page) {
 };
 
 plugin.showAlert = function(message,alerttype) {
-  $('#alert_placeholder').append('<div id="alertdiv" class="alert alert-dismissible fade in navbar-fixed-top '+ alerttype +'" role="alert"><button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>'+ message +'</div>');
+  $('#alert_placeholder').append('<div id="alertdiv" class="alert alert-dismissible fade show navbar-fixed-top '+ alerttype +'" role="alert">'+ message +'<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
   setTimeout(function() {
-    $('#alertdiv').removeClass('in');
+    $('#alertdiv').removeClass('show');
     setTimeout(function() {
       $("#alertdiv").remove();
     }, 1500);
@@ -369,11 +367,11 @@ plugin.clearFilters = function() {
 };
 
 plugin.makeFilterItem = function(text, count, isSelected, type, value) {
-  var item = $('<a href="javascript://void();" class="list-group-item"></a>');
+  var item = $('<a href="javascript://void();" class="list-group-item list-group-item-action"></a>');
   if (isSelected) {
     item.addClass('active');
   }
-  item.append($('<span class="badge"></span>').text(count));
+  item.append($('<span class="badge text-bg-secondary rounded-pill"></span>').text(count));
   item.append(document.createTextNode(text));
   item.click(function() {mobile.setFilter(type, value);});
   return item;
@@ -491,8 +489,8 @@ plugin.loadServerInfo = function() {
           $('#diskSpace').css('display', '');
           $('#diskSpaceBar .progress-bar')
             .css('width', pct + '%')
-            .removeClass('progress-bar-danger progress-bar-warning')
-            .addClass((pct >= 95) ? 'progress-bar-danger' : ((pct >= 80) ? 'progress-bar-warning' : ''))
+            .removeClass('bg-danger bg-warning')
+            .addClass((pct >= 95) ? 'bg-danger' : ((pct >= 80) ? 'bg-warning' : ''))
             .text(pct + '%');
           $('#diskSpaceText').text((theUILang.diskUsage || '%USED%/%TOTAL% (%FREE% free)')
             .replace('%USED%', theConverter.bytes(used, 2))
@@ -593,21 +591,21 @@ plugin.fillLabel = function(label) {
     return;
   }
 
-  $('#torrentDetails #label td:last').text(label + ' ').append('<button class="btn btn-default btn-sm" type="button" onclick="mobile.editLabel();"><i class="glyphicon glyphicon-edit .icon-black"></i></button>');
+  $('#torrentDetails #label td:last').text(label + ' ').append('<button class="btn btn-outline-secondary btn-sm" type="button" onclick="mobile.editLabel();"><i class="bi bi-pencil-square .icon-black"></i></button>');
 };
 
 plugin.fillDetails = function(d) {
   $('#torrentName').text(d.name);
 
   var percent = d.done / 10.0;
-  $('#torrentProgress').removeClass('active');
+  $('#torrentProgress .progress-bar').removeClass('progress-bar-animated');
   if (d.done != 1000) {
-    $('#torrentProgress').addClass('active');
+    $('#torrentProgress .progress-bar').addClass('progress-bar-animated');
   }
   $('#torrentProgress .progress-bar').css('width', percent + '%');
   $('#torrentProgress .progress-bar').text(percent + '% ' + theUILang.of + ' ' + theConverter.bytes(d.size,2));
 
-  $('#torrentDetails #status td:last').text(theWebUI.getStatusIcon(d)[1] + ' ').append('<button class="btn btn-default btn-sm" type="button" onclick="mobile.recheck();"><i class="glyphicon glyphicon-refresh .icon-black"></i></button>');
+  $('#torrentDetails #status td:last').text(theWebUI.getStatusIcon(d)[1] + ' ').append('<button class="btn btn-outline-secondary btn-sm" type="button" onclick="mobile.recheck();"><i class="bi bi-arrow-clockwise .icon-black"></i></button>');
   $('#torrentPriority option').prop('selected', false);
   $('#torrentPriority option[value=' + d.priority + ']').prop('selected', true);
   if (this.ratioGroupsLoaded) {
@@ -647,7 +645,7 @@ plugin.fillDetails = function(d) {
   $('#torrentDetails #peers td:last').text(d.peers_actual + " " + theUILang.of + " " + d.peers_all + " " + theUILang.connected);
   $('#torrentDetails #savePath td:last').text(d.save_path + ' ');
   if (this.dataDirLoaded) {
-    $('#torrentDetails #savePath td:last').append('<button class="btn btn-default btn-sm" type="button" onclick="mobile.showDataDir();"><i class="glyphicon glyphicon-edit .icon-black"></i></button>');
+    $('#torrentDetails #savePath td:last').append('<button class="btn btn-outline-secondary btn-sm" type="button" onclick="mobile.showDataDir();"><i class="bi bi-pencil-square .icon-black"></i></button>');
   }
   $('#torrentDetails #freeDiskSpace td:last').text((d.free_diskspace == '0') ? '' : theConverter.bytes(d.free_diskspace,2));
   $('#torrentDetails #hash td:last').text(d.hash);
@@ -684,7 +682,7 @@ plugin.setTorrentLabel = function(newLabel) {
 plugin.editLabel = function() {
   plugin.labelInEdit = true;
 
-  var sel = $('<select class="form-control"></select>');
+  var sel = $('<select class="form-select"></select>');
   sel.append($('<option></option>').text(theUILang.No_label));
   sel.append($('<option></option>').text(theUILang.newLabel));
   var currentIndex = 0;
@@ -722,7 +720,7 @@ plugin.editLabelText = function() {
   $('#torrentDetails #label td:last')
   .html('<div class="input-append">' +
   '<input class="form-control" id="labelEdit" type="text"/>' +
-  '<button class="btn btn-default btn-sm"><i class="glyphicon glyphicon-ok icon-black"></i></button></div>');
+  '<button class="btn btn-outline-secondary btn-sm"><i class="bi bi-check-lg icon-black"></i></button></div>');
   $('#labelEdit').val(plugin.torrent.label);
   $('#labelEdit').focus();
   $('#labelEdit').blur(function() {
@@ -832,24 +830,24 @@ plugin.loadTrackers = function() {
       var trackers = data[hash];
       if (hash == mobile.torrent.hash) {
         plugin.detailTrackers = {hash: hash, list: trackers};
-        var openPanel = $('#trackersAccordion .panel-collapse.in').attr('id');
+        var openPanel = $('#trackersAccordion .accordion-collapse.show').attr('id');
 
         var trackersHtml = '';
         if (theWebUI.systemInfo.rTorrent.iVersion >= 0x809) {
-          trackersHtml += '<button id="updateTrackersBtn" class="btn btn-default">' + theUILang.updateTracker + '</button>';
+          trackersHtml += '<button id="updateTrackersBtn" class="btn btn-outline-secondary">' + theUILang.updateTracker + '</button>';
         }
-        trackersHtml += '<div class="panel-group" id="trackersAccordion">';
+        trackersHtml += '<div class="accordion" id="trackersAccordion">';
 
         for (var i = 0; i < trackers.length; i++) {
           trackersHtml +=
-          '<div class="panel panel-default"><div class="panel-heading">' +
-          '<a class="accordion-toggle" data-toggle="collapse" data-parent="#trackersAccordion" href="#tracker' + i + '">' +
-          trackers[i].name + '</a></div>' +
-          '<div id="tracker' + i + '" class="panel-collapse collapse"><div class="panel-body">' +
+          '<div class="accordion-item"><h2 class="accordion-header">' +
+          '<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#tracker' + i + '">' +
+          trackers[i].name + '</button></h2>' +
+          '<div id="tracker' + i + '" class="accordion-collapse collapse" data-bs-parent="#trackersAccordion"><div class="accordion-body">' +
           '<table class=" table table-striped"><tbody>' +
           '<tr><td>' + theUILang.Type + '</td><td>' + theFormatter.trackerType(trackers[i].type) + '</td></tr>' +
           '<tr><td>' + theUILang.Enabled + '</td><td>' + theFormatter.yesNo(trackers[i].enabled) +
-          ' <button class="btn btn-default btn-xs trackerToggle" data-index="' + i + '" data-state="' + (trackers[i].enabled ? 0 : 1) + '">' +
+          ' <button class="btn btn-outline-secondary btn-sm trackerToggle" data-index="' + i + '" data-state="' + (trackers[i].enabled ? 0 : 1) + '">' +
           (trackers[i].enabled ? theUILang.DisableTracker : theUILang.EnableTracker) + '</button></td></tr>' +
           '<tr><td>' + theUILang.Group + '</td><td>' + trackers[i].group + '</td></tr>' +
           '<tr><td>' + theUILang.Seeds + '</td><td>' + trackers[i].seeds + '</td></tr>' +
@@ -866,7 +864,8 @@ plugin.loadTrackers = function() {
         trackersHtml += '</div>';
         $('#detailsTrackersPage').html(trackersHtml);
         if (openPanel) {
-          $('#' + openPanel).addClass('in');
+          $('#' + openPanel).addClass('show');
+          $('#trackersAccordion [data-bs-target="#' + openPanel + '"]').removeClass('collapsed');
         }
 
         $('#updateTrackersBtn').click(function() {
@@ -880,14 +879,6 @@ plugin.loadTrackers = function() {
             plugin.loadTrackers();
           });
         });
-
-        if (!plugin.bootstrapJS) {
-          $('#trackersAccordion a').click(function() {
-            $('#trackersAccordion .in').removeClass('in');
-            $(this).parent().parent().find('.panel-body').addClass('in');
-            return false;
-          });
-        }
       }
     });
   }
@@ -1000,21 +991,21 @@ plugin.drawFiles = function(p) {
     }
     var upperDir = realPath.substr(0, i);
     filesHtml += '<a href="javascript://void();" onclick="mobile.drawFiles(\'' + upperDir + '\');">' +
-    '<i class="glyphicon glyphicon-folder-open icon-black"></i> ..</a><hr>';
+    '<i class="bi bi-folder2-open icon-black"></i> ..</a><hr>';
   }
 
   for (var name in dir.container) {
     filesHtml += '<div>' +
     '<div class="hiddenPath">' + realPath + '/' + name + '</div>' +
-    '<button onclick="mobile.toogleDisplay($(this).parent().find(\'.prioritySelect\'));" class="btn btn-default btn-sm pull-right"><i class="glyphicon glyphicon-th-list icon-black"></i></button>'
+    '<button onclick="mobile.toogleDisplay($(this).parent().find(\'.prioritySelect\'));" class="btn btn-outline-secondary btn-sm pull-right"><i class="bi bi-list-ul icon-black"></i></button>'
     if (dir.container[name].directory) {
       filesHtml += '<a href="javascript://void();" onclick="mobile.drawFiles(\'' + realPath + '/' + name + '\');">' +
-      '<i class="glyphicon glyphicon-folder-open icon-black"></i>&nbsp;' + name + '</a>';
+      '<i class="bi bi-folder2-open icon-black"></i>&nbsp;' + name + '</a>';
     } else {
       var idName = 'file' + dir.container[name].id;
       var filePercent = (dir.container[name].size > 0) ? Math.min(100, Math.round(dir.container[name].done / dir.container[name].size * 1000) / 10) : 100;
       filesHtml += '<a href="javascript://void();" onclick="mobile.toogleDisplay($(\'#' + idName + '\'));">' +
-      '<i class="glyphicon glyphicon-file icon-black"></i>&nbsp;' + name + '</a><div style="display:none;" id="' + idName + '">' +
+      '<i class="bi bi-file-earmark icon-black"></i>&nbsp;' + name + '</a><div style="display:none;" id="' + idName + '">' +
       '<table class="table table-striped"><tbody>' +
       '<tr><td>' + theUILang.Done + '</td><td>' + theConverter.bytes(dir.container[name].done) + ' (' + filePercent + '%)</td></tr>' +
       '<tr><td>' + theUILang.Size + '</td><td>' + theConverter.bytes(dir.container[name].size) + '</td></tr>' +
@@ -1184,11 +1175,11 @@ plugin.drawGetDir = function(path, first) {
       var container = $('#getDirList').empty();
       container.append($('<h5></h5>').text(data.path));
       container.append($('<button class="btn btn-primary"></button>').text(theUILang.ok).click(function() {mobile.chooseGetDir(data.path);}));
-      container.append($('<button class="btn btn-default"></button>').text(theUILang.Cancel).click(function() {history.go(-1);}));
+      container.append($('<button class="btn btn-outline-secondary"></button>').text(theUILang.Cancel).click(function() {history.go(-1);}));
 
       var tbody = $('<tbody></tbody>');
       $.each(data.directories, function(i, name) {
-        var cell = $('<td><i class="glyphicon glyphicon-folder-open icon-black"></i> </td>').append(document.createTextNode(name));
+        var cell = $('<td><i class="bi bi-folder2-open icon-black"></i> </td>').append(document.createTextNode(name));
         tbody.append($('<tr></tr>').append(cell).click(function() {mobile.drawGetDir(data.path + name);}));
       });
       container.append($('<table class="table table-striped"></table>').append(tbody));
@@ -1472,8 +1463,8 @@ plugin.processTorrents = function(torrents, singleUpdate) {
         '<tr id="' + v.hash + '" class="torrentBlock status' + statusClass + ' state' + stateClass + ' error' + errorClass + ' label' + plugin.labelIds[v.label] + '" onclick="mobile.showDetails(this.id);"><td>' +
         '<h5>' + v.name + '</h5>' +
         '<span>' + status[1] + ((v.ul) ? ' ↑' + theConverter.speed(v.ul) : '') + ((v.dl) ? ' ↓' + theConverter.speed(v.dl) : '') + ' | ' + ((status[1] == 'Downloading') ? (theUILang.ETA + ' ' + ((v.eta ==- 1) ? "&#8734;" : theConverter.time(v.eta))) : (theUILang.Ratio + ' ' + ((v.ratio ==- 1) ? "&#8734;" : theConverter.round(v.ratio/1000,3)))) + ((v.msg) ? ' | <i class="text-danger">' + v.msg + '</i>' : '') + '</span>' +
-        '<div class="progress' + ((v.done == 1000) ? '' : ' active') + '">' +
-        '<div class="progress-bar progress-bar-striped" style="width: ' + percent + '%;">' + percent + '% ' + theUILang.of + ' ' + theConverter.bytes(v.size,2) + '</div>' +
+        '<div class="progress">' +
+        '<div class="progress-bar progress-bar-striped' + ((v.done == 1000) ? '' : ' progress-bar-animated') + '" style="width: ' + percent + '%;">' + percent + '% ' + theUILang.of + ' ' + theConverter.bytes(v.size,2) + '</div>' +
         '</div>' +
         '</td></tr>';
         listChanged = true;
@@ -1482,12 +1473,12 @@ plugin.processTorrents = function(torrents, singleUpdate) {
         row.removeClass();
         row.addClass('torrentBlock status' + statusClass + ' state' + stateClass + ' error' + errorClass + ' label' + plugin.labelIds[v.label]);
         row.find('span').html(status[1] + ((v.ul) ? ' ↑' + theConverter.speed(v.ul) : '') + ((v.dl) ? ' ↓' + theConverter.speed(v.dl) : '') + ' | ' + ((status[1] == 'Downloading') ? (theUILang.ETA + ' ' + ((v.eta ==- 1) ? "&#8734;" : theConverter.time(v.eta))) : (theUILang.Ratio + ' ' + ((v.ratio ==- 1) ? "&#8734;" : theConverter.round(v.ratio/1000,3)))) + ((v.msg) ? ' | <i class="text-danger">' + v.msg + '</i>' : ''));
-        var progress = row.find('.progress');
-        progress.removeClass('active');
+        var progressBar = row.find('.progress-bar');
+        progressBar.removeClass('progress-bar-animated');
         if (v.done != 1000) {
-          progress.addClass('active');
+          progressBar.addClass('progress-bar-animated');
         }
-        row.find('.progress-bar').css('width', percent + '%').text(percent + '% ' +theUILang.of + ' ' +theConverter.bytes(v.size,2));
+        progressBar.css('width', percent + '%').text(percent + '% ' +theUILang.of + ' ' +theConverter.bytes(v.size,2));
         listChanged = true;
         changedIds.push(v.hash);
       }
@@ -1688,13 +1679,6 @@ plugin.init = function() {
 
   setInterval(function() {plugin.backListener();}, 500);
 
-  var jQueryVer = jQuery.fn.jquery.split('.');
-  if ((jQueryVer[0] == 1) && (jQueryVer[1] >= 7)) {
-    this.bootstrapJS = true;
-  } else if (jQueryVer[0] > 1) {
-    this.bootstrapJS = true;	//For future =)
-  }
-
   $.ajax({
     type: 'GET',
     url: this.path + 'mobile.html',
@@ -1718,16 +1702,19 @@ plugin.init = function() {
         }
       };
 
-      $('link[rel=stylesheet]').remove();
+      // Keep the core's Bootstrap 5 stylesheet (and its JS bundle, already
+      // loaded); drop the desktop-specific stylesheets
+      $('link[rel=stylesheet]').filter(function() {
+        return this.href.indexOf('css/bootstrap.min.css') === -1;
+      }).remove();
+      // The mobile UI is designed for the light scheme
+      $('html').attr('data-bs-theme', 'light');
       plugin.loadLang();
-      plugin.loadCSS('css/bootstrap.min');
       plugin.loadMainCSS();
       $('head').append('<meta name="apple-mobile-web-app-capable" content="yes" />');
       // viewport-fit=cover is required for env(safe-area-inset-*) to report
       // the home-indicator inset on iOS
       $('meta[name=viewport]').attr('content', 'width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, viewport-fit=cover');
-      if (plugin.bootstrapJS)
-      injectScript(plugin.path+'js/bootstrap.min.js');
 
       $('#mainNavbar').addClass('navbar-fixed-bottom');
       $('.nav-tabs').addClass('navbar-fixed-top');
@@ -1882,8 +1869,8 @@ plugin.init = function() {
 
         if (thePlugins.isInstalled('_getdir')) {
           plugin.getDirLoaded = true;
-          $('#dirEditBlock').append('<input type="button" class="btn btn-default btn-sm" id="showGetDir" type="button" onclick="mobile.showGetDir();" value="..."></input>');
-          $('#dataDirEditBlock').append('<input type="button" class="btn btn-default btn-sm" id="showGetDirDataDir" type="button" onclick="mobile.showGetDir(\'#datadir_edit\');" value="..."></input>');
+          $('#dirEditBlock').append('<input type="button" class="btn btn-outline-secondary btn-sm" id="showGetDir" type="button" onclick="mobile.showGetDir();" value="..."></input>');
+          $('#dataDirEditBlock').append('<input type="button" class="btn btn-outline-secondary btn-sm" id="showGetDirDataDir" type="button" onclick="mobile.showGetDir(\'#datadir_edit\');" value="..."></input>');
         }
 
         if (thePlugins.isInstalled('datadir')) {

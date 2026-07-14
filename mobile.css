@@ -1,3 +1,88 @@
+/*** Icons (Bootstrap Icons v1.13.1, MIT — only the glyphs this UI uses) ***/
+@font-face {
+  font-family: 'bootstrap-icons';
+  src: url('fonts/bootstrap-icons.woff2') format('woff2'),
+       url('fonts/bootstrap-icons.woff') format('woff');
+}
+.bi:before {
+  display: inline-block;
+  font-family: 'bootstrap-icons' !important;
+  font-style: normal;
+  font-weight: 400 !important;
+  line-height: 1;
+  vertical-align: -.125em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.bi-arrow-clockwise:before {content: "\f116";}
+.bi-arrow-down-up:before {content: "\f127";}
+.bi-arrow-left:before {content: "\f12f";}
+.bi-download:before {content: "\f30a";}
+.bi-file-earmark:before {content: "\f392";}
+.bi-folder2-open:before {content: "\f3d8";}
+.bi-funnel:before {content: "\f3e1";}
+.bi-gear:before {content: "\f3e5";}
+.bi-list-ul:before {content: "\f478";}
+.bi-pause-fill:before {content: "\f4c3";}
+.bi-pencil-square:before {content: "\f4ca";}
+.bi-play-fill:before {content: "\f4f4";}
+.bi-sort-down:before {content: "\f575";}
+.bi-sort-down-alt:before {content: "\f574";}
+.bi-stop-fill:before {content: "\f592";}
+.bi-trash:before {content: "\f5de";}
+.bi-upload:before {content: "\f603";}
+.bi-plus-lg:before {content: "\f64d";}
+.bi-check-lg:before {content: "\f633";}
+
+
+/*** Bootstrap 3 compat (the core now provides Bootstrap 5) ***/
+body {
+  font-size: 14px;
+}
+h5 {
+  font-size: 14px;
+  margin: 10px 0;
+}
+.pull-left {
+  float: left !important;
+}
+.pull-right {
+  float: right !important;
+}
+.navbar-fixed-top {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 1030;
+}
+.form-group {
+  margin-bottom: 15px;
+}
+.checkbox, .radio {
+  display: block;
+  margin: 10px 0;
+}
+.checkbox label, .radio label, .radio-inline {
+  font-weight: 400;
+  cursor: pointer;
+}
+.checkbox input, .radio input, .radio-inline input {
+  margin-right: 4px;
+}
+.radio-inline {
+  margin-right: 12px;
+}
+.progress {
+  height: 20px;
+  font-size: 12px;
+  margin-bottom: 20px;
+}
+.list-group-item .badge {
+  float: right;
+}
+
+
 /*** General ***/
 html, body {
   overflow: visible;
@@ -50,8 +135,11 @@ a:hover, a:focus {
   white-space: nowrap;
   text-shadow:1px 1px 3px #000
 }
-h5, #detailsTrackersPage a, #detailsFilesPage a, #detailsDetailsPage #label td, .nav a, #getDirList td {
+h5, #detailsTrackersPage a, #detailsTrackersPage .accordion-button, #detailsFilesPage a, #detailsDetailsPage #label td, .nav a, #getDirList td {
   word-break:break-all;
+}
+#detailsTrackersPage .accordion-button {
+  font-size: 14px;
 }
 #torrentsList #list span {
   font-size: 12px;
@@ -59,9 +147,21 @@ h5, #detailsTrackersPage a, #detailsFilesPage a, #detailsDetailsPage #label td, 
 
 
 /*** navbar bottom ***/
+.navbar {
+  margin-bottom: 0;
+  border: none;
+}
+.navbar-inverse {
+  background-color: #222;
+}
 /* Keep the buttons clear of the iOS home indicator on devices that have
    one; on other devices the inset is 0 and the bar stays compact */
 .navbar-fixed-bottom {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  z-index: 1030;
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 .navbar .container {
@@ -104,38 +204,48 @@ h5, #detailsTrackersPage a, #detailsFilesPage a, #detailsDetailsPage #label td, 
 
 /*** navtabs top ***/
 .nav-tabs {
+  display: flex;
   background-color: #fff;
   padding: 3px 3px 0 3px;
+  border-bottom: 1px solid #ddd;
 }
 .nav-tabs a {
   font-size: 15px;
 }
+.nav-tabs > li > a {
+  display: block;
+  padding: 8px 12px;
+  color: #555;
+  border-bottom: 2px solid transparent;
+}
+.nav-tabs > li.active > a {
+  color: #428bca;
+  border-bottom-color: #428bca;
+  font-weight: bold;
+}
 #torrentsList .nav {
   white-space: nowrap;
-  font-size: 0;
 }
 #torrentsList .nav > li > a {
   margin-right: 1px;
 }
 .nav-tabs > li > a:hover, .nav-tabs > li > a:focus {
   background-color: transparent;
-  border-color: transparent;
-}
-.nav-tabs #sort {
-  float: right;
-}
-.nav-tabs #sort #sortIcon i {
-  color: #428bca;
-}
-.nav-tabs #refresh {
-  float: right;
-}
-.nav-tabs #refresh #refreshIcon i {
-  color: #428bca;
 }
 .nav-tabs #torrentsFilter {
-  float: none;
+  flex: 1 1 auto;
+  min-width: 0;
   overflow: hidden;
+  order: 1;
+}
+.nav-tabs #refresh {
+  order: 2;
+}
+.nav-tabs #sort {
+  order: 3;
+}
+.nav-tabs #sort #sortIcon i, .nav-tabs #refresh #refreshIcon i {
+  color: #428bca;
 }
 .nav-tabs #torrentsFilter > a {
   display: block;
@@ -227,6 +337,10 @@ h5, #detailsTrackersPage a, #detailsFilesPage a, #detailsDetailsPage #label td, 
 }
 #peersTable tbody tr {
   cursor: pointer;
+}
+#peersTable tbody tr.info > td {
+  background-color: #d9edf7;
+  --bs-table-bg: #d9edf7;
 }
 
 
