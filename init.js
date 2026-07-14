@@ -64,6 +64,7 @@ var detailsIdToLangId = {
 };
 
 var peersIdToLangId = {
+  'country' : 'countryName',
   'address' : 'Address',
   'client' : 'ClientVersion',
   'flags' : 'Flags',
@@ -935,10 +936,25 @@ plugin.loadPeers = function() {
         
         var selected = plugin.selectedPeer;
 
+        // The geoip plugin's getpeers hook annotates peers with a country
+        // code; render the same flag images the desktop table shows
+        var geoip = thePlugins.get('geoip');
+        var geoipActive = !!(geoip && geoip.enabled && geoip.retrieveCountry);
+        $('#peersTable').toggleClass('no-country', !geoipActive);
+
         var peersHtml = '';
 
         for (var i = 0; i < pid.length; i++) {
+          var flagHtml = '';
+          if (peers[pid[i]].country) {
+            // The country value is e.g. "AU (Sydney)"; translate the code
+            // and keep the city suffix, like the desktop column
+            var cc = peers[pid[i]].country.substr(0, 2);
+            var countryText = ((theUILang.country && theUILang.country[cc]) || cc) + peers[pid[i]].country.substr(2);
+            flagHtml = '<img class="peer-flag" src="plugins/geoip/flags/' + cc.toLowerCase() + '.gif" alt="' + cc + '"/> ' + countryText;
+          }
           peersHtml += '<tr data-pid="' + pid[i] + '" data-snubbed="' + (peers[pid[i]].snubbed ? 1 : 0) + '">' +
+          '<td class="country-cell">' + flagHtml + '</td>' +
           '<td>' + peers[pid[i]].ip + ':' +  peers[pid[i]].port + '</td>' +
           '<td>' + peers[pid[i]].version + '</td>' +
           '<td>' + peers[pid[i]].flags + '</td>' +
@@ -1678,7 +1694,7 @@ plugin.disableOthers = function() {
     theWebUI.loadTorrents = function() { }
 
     $.each(thePlugins.list, function(i, v) {
-      if (v.name != 'rpc' && v.name != 'httprpc' && v.name != '_getdir' && v.name != 'throttle' && v.name != 'ratio' && v.name != 'erasedata' && v.name != 'seedingtime' && v.name != 'datadir' && v.name != 'mobile') {
+      if (v.name != 'rpc' && v.name != 'httprpc' && v.name != '_getdir' && v.name != 'throttle' && v.name != 'ratio' && v.name != 'erasedata' && v.name != 'seedingtime' && v.name != 'datadir' && v.name != 'geoip' && v.name != 'mobile') {
         v.disable();
       }
     });

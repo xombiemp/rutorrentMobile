@@ -414,6 +414,15 @@ h5, #detailsTrackersPage a, #detailsTrackersPage .accordion-button, #detailsFile
 #peersTable tbody tr {
   cursor: pointer;
 }
+#peersTable.no-country th#country, #peersTable.no-country td.country-cell {
+  display: none;
+}
+#peersTable .peer-flag {
+  vertical-align: middle;
+}
+#peersTable td.country-cell {
+  white-space: nowrap;
+}
 #peersTable tbody tr.info > td {
   background-color: rgba(var(--mobile-accent-rgb), 0.2);
   --bs-table-bg: rgba(var(--mobile-accent-rgb), 0.2);
