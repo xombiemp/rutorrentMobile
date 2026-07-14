@@ -36,12 +36,22 @@
 
 
 /*** Bootstrap 3 compat (the core now provides Bootstrap 5) ***/
+/* Bootstrap 5 sets smooth scrolling on :root, which animates the
+   scroll-position restore when returning to the torrent list */
+:root {
+  scroll-behavior: auto;
+}
 body {
   font-size: 14px;
 }
 h5 {
   font-size: 14px;
   margin: 10px 0;
+}
+/* Native Bootstrap 5 palette; only drop the underlines, which read
+   as noise in a link-heavy touch UI */
+a {
+  text-decoration: none;
 }
 .pull-left {
   float: left !important;
@@ -122,13 +132,12 @@ select {
   color: black;
 }
 a:hover, a:focus {
-  color: #428bca;
   outline: none;
   text-decoration: none;
 }
 #mainContainer {
   background-color: #fff;
-  padding: 45px 3px calc(66px + env(safe-area-inset-bottom, 0px)) 3px;
+  padding: 45px 3px calc(74px + env(safe-area-inset-bottom, 0px)) 3px;
   margin: 0;
 }
 .progress .progress-bar {
@@ -215,12 +224,11 @@ h5, #detailsTrackersPage a, #detailsTrackersPage .accordion-button, #detailsFile
 .nav-tabs > li > a {
   display: block;
   padding: 8px 12px;
-  color: #555;
+  color: var(--bs-link-color);
   border-bottom: 2px solid transparent;
 }
 .nav-tabs > li.active > a {
-  color: #428bca;
-  border-bottom-color: #428bca;
+  border-bottom-color: var(--bs-link-color);
   font-weight: bold;
 }
 #torrentsList .nav {
@@ -245,7 +253,7 @@ h5, #detailsTrackersPage a, #detailsTrackersPage .accordion-button, #detailsFile
   order: 3;
 }
 .nav-tabs #sort #sortIcon i, .nav-tabs #refresh #refreshIcon i {
-  color: #428bca;
+  color: var(--bs-link-color);
 }
 .nav-tabs #torrentsFilter > a {
   display: block;
@@ -254,7 +262,7 @@ h5, #detailsTrackersPage a, #detailsTrackersPage .accordion-button, #detailsFile
   text-overflow: ellipsis;
 }
 .nav-tabs #torrentsFilter > a > i {
-  color: #428bca;
+  color: var(--bs-link-color);
   margin-right: 6px;
 }
 
@@ -339,8 +347,8 @@ h5, #detailsTrackersPage a, #detailsTrackersPage .accordion-button, #detailsFile
   cursor: pointer;
 }
 #peersTable tbody tr.info > td {
-  background-color: #d9edf7;
-  --bs-table-bg: #d9edf7;
+  background-color: #cfe2ff;
+  --bs-table-bg: #cfe2ff;
 }
 
 
