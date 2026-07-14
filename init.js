@@ -6,7 +6,7 @@ plugin.sort = '-addtime'; /* 'name', 'status', 'size', 'uploaded', 'downloaded',
 plugin.accentColor = 'primary'; /* Bootstrap theme color for buttons, progress bars and highlights: 'primary' (blue), 'secondary' (gray), 'success' (green), 'danger' (red), 'warning' (yellow), 'info' (cyan) or 'dark' (near-black). */
 /*** End Configurable Options ***/
 
-plugin.filters = {status: 'all', label: null, tracker: null};
+plugin.filters = {status: [], label: [], tracker: []};
 plugin.labelIds = {'': 0};
 plugin.trackerIds = {};
 plugin.nextLabelId = 1;
@@ -260,13 +260,13 @@ plugin.showList = function() {
 };
 
 plugin.statusFilterOptions = [
-  {value: 'all', langId: 'All', countClass: '.torrentBlock', stateId: 'pstate_all'},
-  {value: 'downloading', langId: 'Downloading', countClass: '.statusDownloading', stateId: '-_-_-dls-_-_-'},
-  {value: 'completed', langId: 'Finished', countClass: '.statusCompleted', stateId: '-_-_-com-_-_-'},
-  {value: 'stopped', langId: 'Stopped', countClass: '.statusStopped', stateId: '-_-_-wfa-_-_-'},
-  {value: 'active', langId: 'Active', countClass: '.stateActive', stateId: '-_-_-act-_-_-'},
-  {value: 'inactive', langId: 'Inactive', countClass: '.stateInactive', stateId: '-_-_-iac-_-_-'},
-  {value: 'error', langId: 'Error', countClass: '.errorYes', stateId: '-_-_-err-_-_-'}
+  {value: 'all', langId: 'All', countClass: '.torrentBlock', stateId: 'pstate_all', icon: 'bi-asterisk'},
+  {value: 'downloading', langId: 'Downloading', countClass: '.statusDownloading', stateId: '-_-_-dls-_-_-', icon: 'bi-download'},
+  {value: 'completed', langId: 'Finished', countClass: '.statusCompleted', stateId: '-_-_-com-_-_-', icon: 'bi-check-lg'},
+  {value: 'stopped', langId: 'Stopped', countClass: '.statusStopped', stateId: '-_-_-wfa-_-_-', icon: 'bi-stop-fill'},
+  {value: 'active', langId: 'Active', countClass: '.stateActive', stateId: '-_-_-act-_-_-', icon: 'bi-arrow-down-up'},
+  {value: 'inactive', langId: 'Inactive', countClass: '.stateInactive', stateId: '-_-_-iac-_-_-', icon: 'bi-pause-fill'},
+  {value: 'error', langId: 'Error', countClass: '.errorYes', stateId: '-_-_-err-_-_-', icon: 'bi-exclamation-triangle-fill'}
 ];
 
 // Read status option text from the desktop state panel instead of theUILang:
@@ -294,23 +294,32 @@ plugin.statusFilterClasses = {
 plugin.applyFilters = function() {
   // Drop filters whose label/tracker no longer exists in the torrent list
   // (label/tracker ids are persistent, so check the current lists instead)
-  if (this.filters.label !== null && !$.grep(this.labelList, function(o) {return o.name === plugin.filters.label;}).length) {
-    this.filters.label = null;
-  }
-  if (this.filters.tracker !== null && !$.grep(this.trackerList, function(o) {return o.name === plugin.filters.tracker;}).length) {
-    this.filters.tracker = null;
-  }
+  this.filters.label = $.grep(this.filters.label, function(name) {
+    return $.grep(plugin.labelList, function(o) {return o.name === name;}).length > 0;
+  });
+  this.filters.tracker = $.grep(this.filters.tracker, function(name) {
+    return $.grep(plugin.trackerList, function(o) {return o.name === name;}).length > 0;
+  });
 
-  var sel = '.torrentBlock';
-  if (this.filters.status != 'all') {
-    sel += this.statusFilterClasses[this.filters.status];
-  }
-  if (this.filters.label !== null) {
-    sel += '.label' + this.labelIds[this.filters.label];
-  }
-  if (this.filters.tracker !== null) {
-    sel += '.tracker' + this.trackerIds[this.filters.tracker];
-  }
+  // Selections within a category are ORed, categories are ANDed
+  // (like the desktop panels), so the selector is the cartesian
+  // product of the per-category class lists
+  var statusSels = this.filters.status.length ?
+    $.map(this.filters.status, function(s) {return plugin.statusFilterClasses[s];}) : [''];
+  var labelSels = this.filters.label.length ?
+    $.map(this.filters.label, function(name) {return '.label' + plugin.labelIds[name];}) : [''];
+  var trackerSels = this.filters.tracker.length ?
+    $.map(this.filters.tracker, function(name) {return '.tracker' + plugin.trackerIds[name];}) : [''];
+
+  var sels = [];
+  $.each(statusSels, function(i, s) {
+    $.each(labelSels, function(j, l) {
+      $.each(trackerSels, function(k, t) {
+        sels.push('.torrentBlock' + s + l + t);
+      });
+    });
+  });
+  var sel = sels.join(', ');
 
   $('.torrentBlock').css('display', 'none');
   $(sel).css('display', '');
@@ -332,15 +341,19 @@ plugin.selectionSize = function(elements) {
 
 plugin.updateFilterButton = function(matched) {
   var parts = [];
-  if (this.filters.status != 'all') {
-    var opt = $.grep(this.statusFilterOptions, function(o) {return o.value == plugin.filters.status;})[0];
-    parts.push(this.statusOptionText(opt));
+  if (this.filters.status.length) {
+    parts.push($.map(this.filters.status, function(s) {
+      var opt = $.grep(plugin.statusFilterOptions, function(o) {return o.value == s;})[0];
+      return plugin.statusOptionText(opt);
+    }).join('+'));
   }
-  if (this.filters.label !== null) {
-    parts.push((this.filters.label == '') ? theUILang.No_label : this.filters.label);
+  if (this.filters.label.length) {
+    parts.push($.map(this.filters.label, function(name) {
+      return (name == '') ? theUILang.No_label : name;
+    }).join('+'));
   }
-  if (this.filters.tracker !== null) {
-    parts.push(this.filters.tracker);
+  if (this.filters.tracker.length) {
+    parts.push(this.filters.tracker.join('+'));
   }
   var text = parts.length ? parts.join(' · ') : theUILang.All;
   var info = matched.length;
@@ -348,31 +361,44 @@ plugin.updateFilterButton = function(matched) {
   if (size > 0) {
     info += ' / ' + theConverter.bytes(size, 'catlist');
   }
-  $('#torrentsFilter > a > span').text(text + ' (' + info + ')');
+  $('#filterText').text(text);
+  $('#filterCount').text('(' + info + ')');
 };
 
 plugin.setFilter = function(type, value) {
-  // Tapping the selected label/tracker again deselects it
-  if (type != 'status' && this.filters[type] === value) {
-    value = null;
+  if (value === null || value === 'all') {
+    // The All rows clear their category
+    this.filters[type] = [];
+  } else {
+    // Tapping an option toggles it, like the desktop panels
+    var idx = $.inArray(value, this.filters[type]);
+    if (idx >= 0) {
+      this.filters[type].splice(idx, 1);
+    } else {
+      this.filters[type].push(value);
+    }
   }
-  this.filters[type] = value;
   this.applyFilters();
   this.renderFilterPage();
 };
 
 plugin.clearFilters = function() {
-  this.filters = {status: 'all', label: null, tracker: null};
+  this.filters = {status: [], label: [], tracker: []};
   this.applyFilters();
   this.renderFilterPage();
 };
 
-plugin.makeFilterItem = function(text, count, isSelected, type, value) {
+plugin.makeFilterItem = function(text, count, isSelected, type, value, icon) {
   var item = $('<a href="javascript://void();" class="list-group-item list-group-item-action"></a>');
   if (isSelected) {
     item.addClass('active');
   }
   item.append($('<span class="badge text-bg-secondary rounded-pill"></span>').text(count));
+  if (icon && icon.img) {
+    item.append($('<img class="filter-icon" alt=""/>').attr('src', icon.img));
+  } else {
+    item.append($('<i></i>').addClass('bi ' + icon));
+  }
   item.append(document.createTextNode(text));
   item.click(function() {mobile.setFilter(type, value);});
   return item;
@@ -383,19 +409,26 @@ plugin.renderFilterPage = function() {
 
   var statusList = $('#filterStatusList').empty();
   $.each(this.statusFilterOptions, function(i, opt) {
-    statusList.append(plugin.makeFilterItem(plugin.statusOptionText(opt), $(opt.countClass).length, plugin.filters.status == opt.value, 'status', opt.value));
+    var isSelected = (opt.value == 'all') ? !plugin.filters.status.length : ($.inArray(opt.value, plugin.filters.status) >= 0);
+    statusList.append(plugin.makeFilterItem(plugin.statusOptionText(opt), $(opt.countClass).length, isSelected, 'status', opt.value, opt.icon));
   });
 
+  // The tracklabels plugin serves the same per-label icons and tracker
+  // favicons the desktop panels show
+  var trackLabels = thePlugins.get('tracklabels');
+
   var labelsList = $('#filterLabelsList').empty();
-  labelsList.append(plugin.makeFilterItem(theUILang.All, total, plugin.filters.label === null, 'label', null));
+  labelsList.append(plugin.makeFilterItem(theUILang.All, total, !plugin.filters.label.length, 'label', null, 'bi-asterisk'));
   $.each(this.labelList, function(i, l) {
-    labelsList.append(plugin.makeFilterItem((l.name == '') ? theUILang.No_label : l.name, l.count, plugin.filters.label === l.name, 'label', l.name));
+    var icon = (l.name != '' && trackLabels) ? {img: 'plugins/tracklabels/action.php?label=' + encodeURIComponent(l.name)} : 'bi-tag';
+    labelsList.append(plugin.makeFilterItem((l.name == '') ? theUILang.No_label : l.name, l.count, $.inArray(l.name, plugin.filters.label) >= 0, 'label', l.name, icon));
   });
 
   var trackersList = $('#filterTrackersList').empty();
-  trackersList.append(plugin.makeFilterItem(theUILang.All, total, plugin.filters.tracker === null, 'tracker', null));
+  trackersList.append(plugin.makeFilterItem(theUILang.All, total, !plugin.filters.tracker.length, 'tracker', null, 'bi-asterisk'));
   $.each(this.trackerList, function(i, t) {
-    trackersList.append(plugin.makeFilterItem(t.name, t.count, plugin.filters.tracker === t.name, 'tracker', t.name));
+    var icon = trackLabels ? {img: 'plugins/tracklabels/action.php?tracker=' + encodeURIComponent(t.name)} : 'bi-globe2';
+    trackersList.append(plugin.makeFilterItem(t.name, t.count, $.inArray(t.name, plugin.filters.tracker) >= 0, 'tracker', t.name, icon));
   });
 };
 

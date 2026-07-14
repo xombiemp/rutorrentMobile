@@ -33,6 +33,10 @@
 .bi-upload:before {content: "\f603";}
 .bi-plus-lg:before {content: "\f64d";}
 .bi-check-lg:before {content: "\f633";}
+.bi-asterisk:before {content: "\f151";}
+.bi-exclamation-triangle-fill:before {content: "\f33a";}
+.bi-globe2:before {content: "\f3ef";}
+.bi-tag:before {content: "\f5b0";}
 
 
 /*** Bootstrap 3 compat (the core now provides Bootstrap 5) ***/
@@ -252,9 +256,15 @@ h5, #detailsTrackersPage a, #detailsTrackersPage .accordion-button, #detailsFile
 /*** navtabs top ***/
 .nav-tabs {
   display: flex;
+  /* BS5's .nav wraps by default, which would push the toolbar icons to
+     a second line when the filter text is long; truncate instead */
+  flex-wrap: nowrap;
   background-color: #fff;
   padding: 3px 3px 0 3px;
   border-bottom: 1px solid #ddd;
+}
+.nav-tabs > li {
+  flex: 0 0 auto;
 }
 .nav-tabs a {
   font-size: 15px;
@@ -279,7 +289,7 @@ h5, #detailsTrackersPage a, #detailsTrackersPage .accordion-button, #detailsFile
   background-color: transparent;
 }
 .nav-tabs #torrentsFilter {
-  flex: 1 1 auto;
+  flex: 1 1 0;
   min-width: 0;
   overflow: hidden;
   order: 1;
@@ -294,10 +304,21 @@ h5, #detailsTrackersPage a, #detailsTrackersPage .accordion-button, #detailsFile
   color: var(--mobile-accent);
 }
 .nav-tabs #torrentsFilter > a {
-  display: block;
+  display: flex;
+  align-items: center;
   overflow: hidden;
   white-space: nowrap;
+}
+/* Only the selection names truncate; the count stays visible */
+.nav-tabs #torrentsFilter #filterText {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
   text-overflow: ellipsis;
+}
+.nav-tabs #torrentsFilter #filterCount {
+  flex: 0 0 auto;
+  margin-left: 5px;
 }
 .nav-tabs #torrentsFilter > a > i {
   color: var(--mobile-accent);
@@ -315,6 +336,15 @@ h5, #detailsTrackersPage a, #detailsTrackersPage .accordion-button, #detailsFile
 }
 #torrentFilter .list-group {
   margin-bottom: 10px;
+}
+#torrentFilter .list-group-item .bi {
+  margin-right: 8px;
+}
+#torrentFilter .list-group-item .filter-icon {
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  vertical-align: text-bottom;
 }
 #filterButtons {
   margin-bottom: 5px;
