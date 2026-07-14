@@ -488,11 +488,16 @@ plugin.loadServerInfo = function() {
           // so both UIs show the same percentage
           var pct = Math.min(100, iv(used / d.total * 100));
           $('#diskSpace').css('display', '');
+          // Same green-to-red gradient the desktop status bar meter uses
           $('#diskSpaceBar .progress-bar')
             .css('width', pct + '%')
-            .removeClass('bg-danger bg-warning')
-            .addClass((pct >= 95) ? 'bg-danger' : ((pct >= 80) ? 'bg-warning' : ''));
+            .css('background-color', (new RGBackground()).setGradient(new RGBackground('#99D699'), new RGBackground('#E69999'), pct).getColor());
           $('#diskSpaceBar .progress-label').css('width', pct + '%').text(pct + '%');
+          // Same free-space alarm threshold as the desktop plugin
+          var notifyLimit = thePlugins.get('diskspace').notifySpaceLimit;
+          if (notifyLimit && d.free < notifyLimit) {
+            plugin.showAlert(theUILang.diskNotification, 'alert-danger');
+          }
           $('#diskSpaceText').text((theUILang.diskUsage || '%USED%/%TOTAL% (%FREE% free)')
             .replace('%USED%', theConverter.bytes(used, 2))
             .replace('%TOTAL%', theConverter.bytes(d.total, 2))
