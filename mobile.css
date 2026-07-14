@@ -41,6 +41,27 @@
 :root {
   scroll-behavior: auto;
 }
+/* Accent color, switchable between the standard Bootstrap theme colors
+   via plugin.accentColor in init.js */
+:root {
+  --mobile-accent: var(--bs-primary);
+  --mobile-accent-rgb: var(--bs-primary-rgb);
+}
+.progress-bar {
+  background-color: var(--mobile-accent);
+}
+.list-group {
+  --bs-list-group-active-bg: var(--mobile-accent);
+  --bs-list-group-active-border-color: var(--mobile-accent);
+}
+.accordion {
+  /* Expanded header follows the accent color as a light tint */
+  --bs-accordion-active-bg: rgba(var(--mobile-accent-rgb), 0.15);
+  --bs-accordion-active-color: var(--mobile-accent);
+  --bs-accordion-btn-focus-box-shadow: 0 0 0 0.25rem rgba(var(--mobile-accent-rgb), 0.25);
+  /* Keep the neutral chevron; the stock expanded one is primary-blue */
+  --bs-accordion-btn-active-icon: var(--bs-accordion-btn-icon);
+}
 body {
   font-size: 14px;
 }
@@ -48,9 +69,10 @@ h5 {
   font-size: 14px;
   margin: 10px 0;
 }
-/* Native Bootstrap 5 palette; only drop the underlines, which read
+/* Follow the accent color, and drop the underlines, which read
    as noise in a link-heavy touch UI */
 a {
+  color: var(--mobile-accent);
   text-decoration: none;
 }
 .pull-left {
@@ -240,11 +262,11 @@ h5, #detailsTrackersPage a, #detailsTrackersPage .accordion-button, #detailsFile
 .nav-tabs > li > a {
   display: block;
   padding: 8px 12px;
-  color: var(--bs-link-color);
+  color: var(--mobile-accent);
   border-bottom: 2px solid transparent;
 }
 .nav-tabs > li.active > a {
-  border-bottom-color: var(--bs-link-color);
+  border-bottom-color: var(--mobile-accent);
   font-weight: bold;
 }
 #torrentsList .nav {
@@ -269,7 +291,7 @@ h5, #detailsTrackersPage a, #detailsTrackersPage .accordion-button, #detailsFile
   order: 3;
 }
 .nav-tabs #sort #sortIcon i, .nav-tabs #refresh #refreshIcon i {
-  color: var(--bs-link-color);
+  color: var(--mobile-accent);
 }
 .nav-tabs #torrentsFilter > a {
   display: block;
@@ -278,7 +300,7 @@ h5, #detailsTrackersPage a, #detailsTrackersPage .accordion-button, #detailsFile
   text-overflow: ellipsis;
 }
 .nav-tabs #torrentsFilter > a > i {
-  color: var(--bs-link-color);
+  color: var(--mobile-accent);
   margin-right: 6px;
 }
 
@@ -363,8 +385,8 @@ h5, #detailsTrackersPage a, #detailsTrackersPage .accordion-button, #detailsFile
   cursor: pointer;
 }
 #peersTable tbody tr.info > td {
-  background-color: #cfe2ff;
-  --bs-table-bg: #cfe2ff;
+  background-color: rgba(var(--mobile-accent-rgb), 0.2);
+  --bs-table-bg: rgba(var(--mobile-accent-rgb), 0.2);
 }
 
 

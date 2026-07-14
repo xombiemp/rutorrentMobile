@@ -2,7 +2,8 @@
 plugin.enableAutodetect = true;
 plugin.tabletsDetect = true;
 plugin.eraseWithDataDefault = false;
-plugin.sort = '-addtime'; /* 'name', 'size', 'uploaded', 'downloaded', 'done', 'eta', 'ul', 'dl', 'ratio', 'addtime', 'seedingtime'. Add preceding negative for descending sort. */
+plugin.sort = '-addtime'; /* 'name', 'status', 'size', 'uploaded', 'downloaded', 'done', 'eta', 'ul', 'dl', 'ratio', and with the seedingtime plugin 'addtime', 'seedingtime'. Add preceding negative for descending sort. */
+plugin.accentColor = 'primary'; /* Bootstrap theme color for buttons, progress bars and highlights: 'primary' (blue), 'secondary' (gray), 'success' (green), 'danger' (red), 'warning' (yellow), 'info' (cyan) or 'dark' (near-black). */
 /*** End Configurable Options ***/
 
 plugin.filters = {status: 'all', label: null, tracker: null};
@@ -1174,7 +1175,7 @@ plugin.drawGetDir = function(path, first) {
     success: function(data) {
       var container = $('#getDirList').empty();
       container.append($('<h5></h5>').text(data.path));
-      container.append($('<button class="btn btn-primary"></button>').text(theUILang.ok).click(function() {mobile.chooseGetDir(data.path);}));
+      container.append($('<button class="btn btn-' + plugin.accentColor + '"></button>').text(theUILang.ok).click(function() {mobile.chooseGetDir(data.path);}));
       container.append($('<button class="btn btn-outline-secondary"></button>').text(theUILang.Cancel).click(function() {history.go(-1);}));
 
       var tbody = $('<tbody></tbody>');
@@ -1711,6 +1712,12 @@ plugin.init = function() {
       }).remove();
       // The mobile UI is designed for the light scheme
       $('html').attr('data-bs-theme', 'light');
+      // Apply the configured accent color (see plugin.accentColor at the top)
+      if (plugin.accentColor != 'primary') {
+        document.documentElement.style.setProperty('--mobile-accent', 'var(--bs-' + plugin.accentColor + ')');
+        document.documentElement.style.setProperty('--mobile-accent-rgb', 'var(--bs-' + plugin.accentColor + '-rgb)');
+        $('.btn-primary').addClass('btn-' + plugin.accentColor).removeClass('btn-primary');
+      }
       plugin.loadLang();
       plugin.loadMainCSS();
       $('head').append('<meta name="apple-mobile-web-app-capable" content="yes" />');

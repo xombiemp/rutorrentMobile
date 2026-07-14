@@ -36,6 +36,10 @@ If in rutorrent you turned off 'Confirm when deleting torrents', this plugin wil
 'name' by default. Possible values: 'name', '-name', 'status', '-status', 'size', '-size', 'uploaded', '-uploaded', 'downloaded', '-downloaded', 'done', '-done', 'eta', '-eta', 'ul', '-ul', 'dl', '-dl', 'ratio', '-ratio', and if the seedingtime plugin is loaded 'addtime', '-addtime', 'seedingtime', '-seedingtime'.  
 This option sets the default sort value of the torrent list. Without negative it's ascending, with negative it's descending.
 
+#### plugin.accentColor
+'primary' by default. Possible values: 'primary' (blue), 'secondary' (gray), 'success' (green), 'danger' (red), 'warning' (yellow), 'info' (cyan), 'dark' (near-black).  
+This option sets the Bootstrap theme color used for buttons, progress bars, tab highlights and selections.
+
 ### Utilization
 If you set plugin.enableAutodetect to true, the plugin will automaticaly load when detecting a mobile device. To force load the plugin in a desktop browser add '?mobile=1' to the end of the rutorrent url.
 
