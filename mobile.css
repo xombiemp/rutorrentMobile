@@ -225,6 +225,12 @@ h5, #detailsTrackersPage a, #detailsTrackersPage .accordion-button, #detailsFile
 }
 .navbar .nav > li:last-child {
   margin-right: 0px;
+  /* Center the up/down speed stack on the bar's midline, like the
+     table-cell-centered icons in the other items */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 65px;
 }
 .navbar .nav > li > a, .navbar .nav > li > a:hover, .navbar .nav > li > a:focus {
   display: table-cell;
@@ -241,7 +247,6 @@ h5, #detailsTrackersPage a, #detailsTrackersPage .accordion-button, #detailsFile
   line-height: 0;
 }
 .navbar .nav > li > div > i {
-  margin-top: 10px;
   margin-right: 2px;
   font-size: 17px;
 }
