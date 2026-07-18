@@ -961,6 +961,34 @@ plugin.loadTrackers = function() {
   }
 };
 
+// Refresh the changing tracker values in place (no rebuild, so the open
+// accordion panel and toggle buttons are left alone). Row indexes must
+// match the table built in loadTrackers.
+plugin.refreshTrackers = function() {
+  if (this.torrent == undefined) {
+    return;
+  }
+  var hash = this.torrent.hash;
+  this.request('?action=gettrackers&hash=' + hash, function(data) {
+    if (mobile.torrent == undefined || hash != mobile.torrent.hash || !$('#detailsTrackersPage').is(':visible')) {
+      return;
+    }
+    var trackers = data[hash];
+    plugin.detailTrackers = {hash: hash, list: trackers};
+    for (var i = 0; i < trackers.length; i++) {
+      var rows = $('#tracker' + i + ' tbody tr');
+      if (!rows.length) {
+        continue;
+      }
+      rows.eq(3).find('td:last').text(trackers[i].seeds);
+      rows.eq(4).find('td:last').text(trackers[i].peers);
+      rows.eq(5).find('td:last').text(trackers[i].downloaded);
+      rows.eq(6).find('td:last').text(trackers[i].last ? theConverter.time($.now() / 1000 - trackers[i].last - theWebUI.deltaTime / 1000, true) : '');
+      rows.eq(7).find('td:last').text(theConverter.time(trackers[i].interval));
+    }
+  });
+};
+
 plugin.loadPeers = function() {
   if (this.torrent != undefined) {
     var hash = this.torrent.hash;
@@ -1175,9 +1203,39 @@ plugin.loadFiles = function() {
 
       plugin.fillDirectoriesPriority(files);
       mobile.files = files;
+      mobile.filesDownloaded = mobile.torrent.downloaded;
       mobile.drawFiles('');
     });
   }
+}
+
+// Refresh the per-file done values in place (no DOM rebuild, so expanded
+// rows and open priority selects are left alone)
+plugin.refreshFiles = function() {
+  if (this.torrent == undefined) {
+    return;
+  }
+  var hash = this.torrent.hash;
+  this.filesDownloaded = this.torrent.downloaded;
+  this.request('?action=getfiles&hash=' + hash, function(data) {
+    if (mobile.torrent == undefined || hash != mobile.torrent.hash || !$('#detailsFilesPage').is(':visible')) {
+      return;
+    }
+    var rawFiles = data[hash];
+    for (var i = 0; i < rawFiles.length; i++) {
+      // Update the visible Done cell, if this file's row is rendered
+      var cell = $('#file' + i + ' tr:first td:last');
+      if (cell.length) {
+        var pct = (rawFiles[i].size > 0) ? Math.min(100, Math.round(rawFiles[i].done / rawFiles[i].size * 1000) / 10) : 100;
+        cell.text(theConverter.bytes(rawFiles[i].done) + ' (' + pct + '%)');
+      }
+      // Keep the in-memory tree fresh for navigation
+      var node = plugin.getDir(rawFiles[i].name.replace(/^\/|\/$/g, ''))[1];
+      if (node && !node.directory) {
+        node.done = rawFiles[i].done;
+      }
+    }
+  });
 }
 
 plugin.start = function() {
@@ -1653,6 +1711,13 @@ plugin.processTorrents = function(torrents, singleUpdate) {
         plugin.fillDetails(plugin.torrent);
         if ($('#detailsPeersPage').is(':visible')) {
           plugin.loadPeers();
+        }
+        // Refresh file percentages while data is arriving, like the desktop
+        if ($('#detailsFilesPage').is(':visible') && plugin.filesDownloaded != plugin.torrent.downloaded) {
+          plugin.refreshFiles();
+        }
+        if ($('#detailsTrackersPage').is(':visible')) {
+          plugin.refreshTrackers();
         }
       } else {
         plugin.showList();
