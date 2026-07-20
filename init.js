@@ -77,6 +77,8 @@ var peersIdToLangId = {
   'peer_downloaded' : 'PeerDownloaded',
 };
 
+// Fallback copy of the tracklabels plugin's theWebUI.getTrackerName
+// (announce URL to display name), for when tracklabels isn't installed
 if(!$type(theWebUI.getTrackerName))
 {
   theWebUI.getTrackerName = function(announce)
@@ -84,7 +86,7 @@ if(!$type(theWebUI.getTrackerName))
     var domain = '';
     if(announce)
     {
-      var parts = announce.match(/^(?:([^:\/?#]+):)?(?:\/\/((?:(([^:@]*):?([^:@]*))?@)?([^:\/?#]*)(?::(\d*))?))?((((?:[^?#\/]*\/)*)([^?#]*))(?:\?([^#]*))?(?:#(.*))?)/);
+      var parts = announce.match(/^(?:([^:/?#]+):)?(?:\/\/((?:(([^:@]*):?([^:@]*))?@)?([^:/?#]*)(?::(\d*))?))?((((?:[^?#/]*\/)*)([^?#]*))(?:\?([^#]*))?(?:#(.*))?)/);
       if(parts && (parts.length>6))
       {
         domain = parts[6];
@@ -440,24 +442,17 @@ plugin.showFilter = function() {
 
 plugin.showSettings = function() {
   this.request("?action=gettotal", function(total) {
-    $('#dlLimit').html('');
-    $('#ulLimit').html('');
-
-    var speeds = theWebUI.settings["webui.speedlistdl"].split(",");
-
-    for (var i = 0; i < speeds.length; i++) {
-      var spd = speeds[i] * 1024;
-      $('#dlLimit').append('<option' + (spd == total.rateDL ? ' selected' : '') + ' value="' + spd + '">' + theConverter.speed(spd) + '</option>');
+    // 327625 KiB/s is the core's "unlimited" sentinel (see js/webui.js)
+    var fillLimitSelect = function(sel, speedList, current) {
+      sel.empty();
+      $.each(speedList.split(","), function(i, s) {
+        var spd = s * 1024;
+        sel.append('<option' + (spd == current ? ' selected' : '') + ' value="' + spd + '">' + theConverter.speed(spd) + '</option>');
+      });
+      sel.append('<option' + ((current <= 0 || current >= 327625*1024) ? ' selected' : '') + ' value="' + 327625*1024 + '">' + theUILang.unlimited + '</option>');
     };
-    $('#dlLimit').append('<option' + ((total.rateDL <= 0 || total.rateDL >= 327625*1024) ? ' selected' : '') + ' value="' + 327625*1024 + '">' + theUILang.unlimited + '</option>');
-
-    speeds=theWebUI.settings["webui.speedlistul"].split(",");
-
-    for (var i = 0; i < speeds.length; i++) {
-      var spd = speeds[i] * 1024;
-      $('#ulLimit').append('<option' + (spd == total.rateUL ? ' selected' : '') + ' value="' + spd + '">' + theConverter.speed(spd) + '</option>');
-    };
-    $('#ulLimit').append('<option' + ((total.rateUL <= 0 || total.rateUL >= 327625*1024) ? ' selected' : '') + ' value="' + 327625*1024 + '">' + theUILang.unlimited + '</option>');
+    fillLimitSelect($('#dlLimit'), theWebUI.settings["webui.speedlistdl"], total.rateDL);
+    fillLimitSelect($('#ulLimit'), theWebUI.settings["webui.speedlistul"], total.rateUL);
 
     plugin.loadServerInfo();
     plugin.showPage('globalSettings');
@@ -593,7 +588,7 @@ plugin.showSort = function() {
     $('#sort_asc').prop('checked', true);
   }
   
-  sortHtml = '<option value="name">' + theUILang.Name + '</option>' +
+  var sortHtml = '<option value="name">' + theUILang.Name + '</option>' +
               '<option value="status">' + theUILang.Status + '</option>' +
               '<option value="size">' + theUILang.Size + '</option>' +
               '<option value="uploaded">' + theUILang.Uploaded + '</option>' +
@@ -1451,6 +1446,7 @@ plugin.loadRatio = function () {
         var wasNo = plugin.getRatioData(this.hashes[i]);
         if(wasNo!=this.vs[i])
         {
+          var cmd;
           if(wasNo>=0)
           {
             cmd = new rXMLRPCCommand('view.set_not_visible');
@@ -1500,6 +1496,7 @@ plugin.loadThrottle = function () {
         var status = theWebUI.getStatusIcon(mobile.torrents[this.hashes[i]]);
         var needRestart = (status[1]==theUILang.Seeding) || (status[1]==theUILang.Downloading);
         var name = (this.vs[i]>=0) ? "thr_"+this.vs[i] : "";
+        var cmd;
         if(needRestart)
         {
           cmd = new rXMLRPCCommand('d.stop');
@@ -1542,20 +1539,21 @@ plugin.dynamicSort = function (property) {
     property = property.substr(1);
   }
   return function (a,b) {
+    var result;
     if (typeof a[property] == 'string' || a[property] instanceof String) {
       if (parseInt(a[property])) {
         if (parseInt(b[property])) {
-          var result = (parseInt(a[property]) < parseInt(b[property])) ? -1 : (parseInt(a[property]) > parseInt(b[property])) ? 1 : 0;
+          result = (parseInt(a[property]) < parseInt(b[property])) ? -1 : (parseInt(a[property]) > parseInt(b[property])) ? 1 : 0;
         } else {
-          var result = -1;
+          result = -1;
         }
       } else if (parseInt(b[property])) {
-        var result = 1;
+        result = 1;
       } else {
-        var result = (a[property].toLowerCase() < b[property].toLowerCase()) ? -1 : (a[property].toLowerCase() > b[property].toLowerCase()) ? 1 : 0;
+        result = (a[property].toLowerCase() < b[property].toLowerCase()) ? -1 : (a[property].toLowerCase() > b[property].toLowerCase()) ? 1 : 0;
       }
     } else {
-      var result = (a[property] < b[property]) ? -1 : (a[property] > b[property]) ? 1 : 0;
+      result = (a[property] < b[property]) ? -1 : (a[property] > b[property]) ? 1 : 0;
     }
     if (result == 0 && property != 'name') {
       // Tie-break by name (always ascending), so e.g. sorting by status
@@ -1582,9 +1580,9 @@ plugin.processTorrents = function(torrents, singleUpdate) {
 
   plugin.labelList = [{name: '', count: theWebUI.categoryList.panelLabelAttribs.plabel.get("-_-_-nlb-_-_-").count}];
 
-  for (l of theWebUI.categoryList.panelLabelAttribs.plabel.keys()) {
+  for (const l of theWebUI.categoryList.panelLabelAttribs.plabel.keys()) {
     if (l.startsWith("clabel")) {
-      labelProper = l.replace('clabel__', '');
+      const labelProper = l.replace('clabel__', '');
       if (plugin.labelIds[labelProper] == undefined) {
         plugin.labelIds[labelProper] = plugin.nextLabelId++;
       }
@@ -1629,7 +1627,7 @@ plugin.processTorrents = function(torrents, singleUpdate) {
         listHtmlString +=
         '<tr id="' + v.hash + '" class="torrentBlock status' + statusClass + ' state' + stateClass + ' error' + errorClass + ' label' + plugin.labelIds[v.label] + '" onclick="mobile.showDetails(this.id);"><td>' +
         '<h5>' + escapeHTML(v.name) + '</h5>' +
-        '<span>' + status[1] + ((v.ul) ? ' ↑' + theConverter.speed(v.ul) : '') + ((v.dl) ? ' ↓' + theConverter.speed(v.dl) : '') + ' | ' + ((status[1] == 'Downloading') ? (theUILang.ETA + ' ' + ((v.eta ==- 1) ? "&#8734;" : theConverter.time(v.eta))) : (theUILang.Ratio + ' ' + ((v.ratio ==- 1) ? "&#8734;" : theConverter.round(v.ratio/1000,3)))) + ((v.msg) ? ' | <i class="text-danger">' + escapeHTML(v.msg) + '</i>' : '') + '</span>' +
+        '<span>' + status[1] + ((v.ul) ? ' ↑' + theConverter.speed(v.ul) : '') + ((v.dl) ? ' ↓' + theConverter.speed(v.dl) : '') + ' | ' + ((statusClass == 'Downloading') ? (theUILang.ETA + ' ' + ((v.eta ==- 1) ? "&#8734;" : theConverter.time(v.eta))) : (theUILang.Ratio + ' ' + ((v.ratio ==- 1) ? "&#8734;" : theConverter.round(v.ratio/1000,3)))) + ((v.msg) ? ' | <i class="text-danger">' + escapeHTML(v.msg) + '</i>' : '') + '</span>' +
         '<div class="progress">' +
         '<div class="progress-bar progress-bar-striped' + ((v.done == 1000) ? '' : ' progress-bar-animated') + '" style="width: ' + percent + '%;"></div>' +
         '<span class="progress-label" style="width: ' + percent + '%;">' + percent + '% ' + theUILang.of + ' ' + theConverter.bytes(v.size,2) + '</span>' +
@@ -1640,7 +1638,7 @@ plugin.processTorrents = function(torrents, singleUpdate) {
       } else if ( ! plugin.rowsPrev[v.hash] || ! isEqual(rowsNow[v.hash], plugin.rowsPrev[v.hash]) ) {
         row.removeClass();
         row.addClass('torrentBlock status' + statusClass + ' state' + stateClass + ' error' + errorClass + ' label' + plugin.labelIds[v.label]);
-        row.find('span').html(status[1] + ((v.ul) ? ' ↑' + theConverter.speed(v.ul) : '') + ((v.dl) ? ' ↓' + theConverter.speed(v.dl) : '') + ' | ' + ((status[1] == 'Downloading') ? (theUILang.ETA + ' ' + ((v.eta ==- 1) ? "&#8734;" : theConverter.time(v.eta))) : (theUILang.Ratio + ' ' + ((v.ratio ==- 1) ? "&#8734;" : theConverter.round(v.ratio/1000,3)))) + ((v.msg) ? ' | <i class="text-danger">' + escapeHTML(v.msg) + '</i>' : ''));
+        row.find('span').html(status[1] + ((v.ul) ? ' ↑' + theConverter.speed(v.ul) : '') + ((v.dl) ? ' ↓' + theConverter.speed(v.dl) : '') + ' | ' + ((statusClass == 'Downloading') ? (theUILang.ETA + ' ' + ((v.eta ==- 1) ? "&#8734;" : theConverter.time(v.eta))) : (theUILang.Ratio + ' ' + ((v.ratio ==- 1) ? "&#8734;" : theConverter.round(v.ratio/1000,3)))) + ((v.msg) ? ' | <i class="text-danger">' + escapeHTML(v.msg) + '</i>' : ''));
         var progressBar = row.find('.progress-bar');
         progressBar.removeClass('progress-bar-animated');
         if (v.done != 1000) {
@@ -2033,7 +2031,7 @@ plugin.init = function() {
 
       if (thePlugins.isInstalled('erasedata')) {
         $('#confimTorrentDelete h5').after(
-          '<div class="checkbox"><label" id="deleteWithData">' +
+          '<div class="checkbox"><label id="deleteWithData">' +
           '<input type="checkbox"> ' + theUILang.Delete_data + '</label></div>');
 
           plugin.eraseWithDataLoaded = true;
@@ -2051,8 +2049,8 @@ plugin.init = function() {
 
         if (thePlugins.isInstalled('_getdir')) {
           plugin.getDirLoaded = true;
-          $('#dirEditBlock').append('<input type="button" class="btn btn-outline-secondary btn-sm" id="showGetDir" type="button" onclick="mobile.showGetDir();" value="..."></input>');
-          $('#dataDirEditBlock').append('<input type="button" class="btn btn-outline-secondary btn-sm" id="showGetDirDataDir" type="button" onclick="mobile.showGetDir(\'#datadir_edit\');" value="..."></input>');
+          $('#dirEditBlock').append('<input type="button" class="btn btn-outline-secondary btn-sm" id="showGetDir" onclick="mobile.showGetDir();" value="...">');
+          $('#dataDirEditBlock').append('<input type="button" class="btn btn-outline-secondary btn-sm" id="showGetDirDataDir" onclick="mobile.showGetDir(\'#datadir_edit\');" value="...">');
         }
 
         if (thePlugins.isInstalled('datadir')) {
