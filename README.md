@@ -1,19 +1,12 @@
 ## ruTorrent Mobile Plugin
 
+A touch-friendly mobile interface for ruTorrent. When a phone or tablet is detected (or `?mobile=1` is added to the URL), it replaces the desktop UI with a compact single-column layout: torrent list with filtering and sorting, torrent details (general info, trackers, files, peers), adding torrents, speed limits and server status.
+
 ### Prereqs
-This plugin requires ruTorrent v4.3 or newer (it uses the core's Bootstrap 5 assets and category list) and the httprpc plugin.
+This plugin requires the httprpc plugin.
 
-### Installation
-Place all the plugin files in a directory called mobile in the rutorrent/plugins directory.
-To clone directly from this git repository, run this command in the rutorrent/plugins directory:
-```
-git clone https://github.com/xombiemp/rutorrentMobile.git mobile
-
-```
-
-> **Note:** It is important that the plugin directory is named 'mobile' so that the supporting files are loaded correctly.
-
-Optional plugins that add additional functionality:
+### Optional plugins
+These plugins add additional functionality when installed:
 * _getdir: Allows you to browse directories from your server when adding a torrent or moving torrent data.
 * erasedata: Allows you to delete with data when deleting a torrent.
 * seedingtime: Adds the fields Added and Finished to the torrent details page, and the addtime and seedingtime sort options.
@@ -52,4 +45,4 @@ If you set plugin.enableAutodetect to true, the plugin will automaticaly load wh
 If you are experiencing problems with this plugin, for example it's not scrolling or there are overlapping elements, try these solutions.
 * Make sure the httprpc plugin is installed. The mobile plugin requires it.
 * Make sure the plugin directory is named 'mobile' or else it won't load the plugin specific css file called mobile.css
-* If you are still having issues, submit an issue on github https://github.com/xombiemp/rutorrentMobile/issues and be sure to include as much detail as possible including: mobile device and OS and browser, server OS and webserver.
+* If you are still having issues, submit an issue on github https://github.com/Novik/ruTorrent/issues and be sure to include as much detail as possible including: mobile device and OS and browser, server OS and webserver.
