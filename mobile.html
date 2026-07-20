@@ -1,5 +1,5 @@
 <div id="mainContainer">
-  
+
   <nav id="mainNavbar" class="navbar navbar-inverse">
     <div class="container">
       <ul class="nav navbar-inverse">
@@ -37,7 +37,7 @@
       </ul>
     </div>
   </nav>
-  
+
   <div class="mainContainer" id="torrentsList">
     <ul class="nav nav-tabs">
       <li id="sort">
@@ -52,7 +52,7 @@
     </ul>
     <div id="list"><table class="table table-striped"><tbody></tbody></table></div>
   </div>
-  
+
   <div class="mainContainer" id="torrentDetails" style="display:none;">
     <div id="torrentDetailsHeader">
       <h5 id="torrentName"></h5>
@@ -138,7 +138,7 @@
       </div>
     </div>
   </div>
-  
+
   <div class="mainContainer container" id="torrentSort" style="display:none;">
     <div class="form-group">
       <label class="select" for="sortOption"><h5></h5></label>
@@ -151,7 +151,7 @@
     <button id="sortOk" onclick="mobile.setSort();" class="btn btn-primary"></button>
     <button id="sortCancel" onclick="history.go(-1);" class="btn btn-outline-secondary"></button>
   </div>
-  
+
   <div class="mainContainer container" id="torrentFilter" style="display:none;">
     <div id="filterButtons">
       <button id="filterDone" onclick="history.go(-1);" class="btn btn-primary"></button>
@@ -164,7 +164,7 @@
     <h5 id="filterTrackersHeader"></h5>
     <div class="list-group" id="filterTrackersList"></div>
   </div>
-  
+
   <div class="mainContainer container" id="globalSettings" style="display:none;">
     <div class="form-group">
       <label class="select" for="dlLimit"><h5></h5></label>
@@ -193,7 +193,7 @@
       </tbody>
     </table>
   </div>
-  
+
   <div class="mainContainer container" id="addTorrent" style="display:none;">
     <form action="php/addtorrent.php?" id="addTorrentFile" method="post" enctype="multipart/form-data" target="uploadFrame">
       <div class="input-append" id="dirEditBlock">
@@ -231,7 +231,7 @@
       <button type="submit" id="addUrl" class="btn btn-primary" disabled></button>
     </form>
   </div>
-  
+
   <div class="mainContainer container" id="torrentDataDir" style="display:none;">
     <h5 id="dataDirHeader"></h5>
     <div class="input-append" id="dataDirEditBlock">
@@ -249,15 +249,15 @@
     <button id="dataDirOk" onclick="mobile.sendDataDir();" class="btn btn-primary"></button>
     <button id="dataDirCancel" onclick="history.go(-1);" class="btn btn-outline-secondary"></button>
   </div>
-  
+
   <div class="mainContainer" id="getDirList" style="display:none;"></div>
-  
+
   <div class="mainContainer container text-center" id="confirmTorrentDelete" style="display:none;">
     <h5></h5>
     <button id="deleteOk" onclick="mobile.deleteConfirmed();" class="btn btn-primary"></button>
     <button id="deleteCancel" onclick="history.go(-1);" class="btn btn-outline-secondary"></button>
   </div>
-  
+
   <div id="alert_placeholder"></div>
-  
+
 </div>

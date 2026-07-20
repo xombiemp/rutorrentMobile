@@ -6,6 +6,8 @@ plugin.sort = 'name'; /* 'name', 'status', 'size', 'uploaded', 'downloaded', 'do
 plugin.accentColor = 'primary'; /* Bootstrap theme color for buttons, progress bars and highlights: 'primary' (blue), 'secondary' (gray), 'success' (green), 'danger' (red), 'warning' (yellow), 'info' (cyan) or 'dark' (near-black). */
 /*** End Configurable Options ***/
 
+
+/*** State ***/
 plugin.filters = {status: [], label: [], tracker: []};
 plugin.labelIds = {'': 0};
 plugin.trackerIds = {};
@@ -25,6 +27,10 @@ plugin.ratioGroupsLoaded = false;
 plugin.throttleLoaded = false;
 plugin.seedingtimeLoaded = false;
 plugin.dataDirLoaded = false;
+plugin.files = undefined; /* file tree for the details Files tab */
+
+
+/*** Static lookup tables ***/
 var pageToHash = {
   'torrentsList': '',
   'torrentDetails': 'details',
@@ -77,6 +83,7 @@ var peersIdToLangId = {
   'peer_downloaded' : 'PeerDownloaded',
 };
 
+/*** Small helpers ***/
 // Fallback copy of the tracklabels plugin's theWebUI.getTrackerName
 // (announce URL to display name), for when tracklabels isn't installed
 if(!$type(theWebUI.getTrackerName))
@@ -147,6 +154,10 @@ plugin.toggleDisplay = function(s) {
   }
 };
 
+/*** Page navigation ***/
+// Every page is a .mainContainer div in mobile.html; showPage() switches
+// between them and mirrors the current page into the URL hash so the
+// browser's back button navigates the UI (see backListener)
 plugin.backListener = function() {
   if (this.lastHref != window.location.href) {
     if (window.location.hash == '#details') {
@@ -244,6 +255,7 @@ plugin.showList = function() {
   this.showPage('torrentsList');
 };
 
+/*** Filter page ***/
 plugin.statusFilterOptions = [
   {value: 'all', langId: 'All', countClass: '.torrentBlock', stateId: 'pstate_all', icon: 'bi-asterisk'},
   {value: 'downloading', langId: 'Downloading', countClass: '.statusDownloading', stateId: '-_-_-dls-_-_-', icon: 'bi-download'},
@@ -421,6 +433,7 @@ plugin.showFilter = function() {
   this.showPage('torrentFilter');
 };
 
+/*** Settings page ***/
 plugin.showSettings = function() {
   this.request("?action=gettotal", function(total) {
     // 327625 KiB/s is the core's "unlimited" sentinel (see js/webui.js)
@@ -555,11 +568,12 @@ plugin.loadServerInfo = function() {
   }
 };
 
+/*** Sort page ***/
 plugin.showSort = function() {
   $('#sortOption option').prop('selected', false);
   $('#sort_asc').prop('checked', false);
   $('#sort_desc').prop('checked', false);
-  
+
   var sort = '';
   if(plugin.sort[0] === "-") {
     sort = plugin.sort.substr(1);
@@ -568,7 +582,7 @@ plugin.showSort = function() {
     sort = plugin.sort;
     $('#sort_asc').prop('checked', true);
   }
-  
+
   var sortHtml = '<option value="name">' + theUILang.Name + '</option>' +
               '<option value="status">' + theUILang.Status + '</option>' +
               '<option value="size">' + theUILang.Size + '</option>' +
@@ -579,14 +593,14 @@ plugin.showSort = function() {
               '<option value="ul">' + theUILang.Ul_speed + '</option>' +
               '<option value="dl">' + theUILang.Down_speed + '</option>' +
               '<option value="ratio">' + theUILang.Ratio + '</option>';
-  
+
   if (this.seedingtimeLoaded) {
     sortHtml += '<option value="addtime">' + theUILang.addTime + '</option>' +
                 '<option value="seedingtime">' + theUILang.seedingTime + '</option>'
   }
   $('#sortOption').html(sortHtml);
   $('#sortOption option[value=' + sort + ']').prop('selected', true);
-  
+
   plugin.showPage('torrentSort');
 };
 
@@ -612,6 +626,7 @@ plugin.setSort = function() {
   history.go(-1);
 };
 
+/*** Add-torrent page ***/
 plugin.addTorrent = function() {
   this.returningFromGetDir = false;
   // Mirror the desktop dialog's beforeShow handler (js/content.js)
@@ -639,6 +654,7 @@ plugin.addTorrent = function() {
   $('#dir_edit').width($('#addTorrentFile').outerWidth(true) - used);
 };
 
+/*** Torrent details: General tab ***/
 plugin.fillLabel = function(label) {
   if (this.labelInEdit) {
     return;
@@ -781,6 +797,7 @@ plugin.editLabelText = function() {
   });
 };
 
+/*** Torrent details: page and tab switching ***/
 plugin.showDetails = function(e) {
   this.torrent = this.torrents[e];
   if (this.torrent == undefined)
@@ -853,6 +870,7 @@ plugin.showPeersInDetails = function() {
   this.loadPeers();
 }
 
+/*** Torrent details: Peers tab ***/
 plugin.selectPeer = function(row) {
   var wasSelected = $(row).hasClass('info');
   $('#peersTable tbody tr').removeClass('info');
@@ -872,6 +890,71 @@ plugin.peerAction = function(cmd, arg) {
   });
 };
 
+plugin.loadPeers = function() {
+  if (this.torrent != undefined) {
+    var hash = this.torrent.hash;
+    this.request('?action=getpeers&hash=' + hash, function(data) {
+      var peers = data;
+      var pid = Object.keys(peers);
+      if (hash == mobile.torrent.hash) {
+        var tableHeight = $(window).height() - $('#mainNavbar').outerHeight(true) - ($('#torrentDetails .nav').outerHeight(true) + $('#torrentDetailsHeader').outerHeight(true) + ($('#torrentDetailsHeader #torrentProgress').outerHeight(true) - $('#torrentDetailsHeader #torrentProgress').outerHeight()));
+        $('div.tableFixHead').css("max-height", tableHeight + "px");
+
+        var selected = plugin.selectedPeer;
+
+        // The geoip plugin's getpeers hook annotates peers with a country
+        // code; render the same flag images the desktop table shows
+        var geoip = thePlugins.get('geoip');
+        var geoipActive = !!(geoip && geoip.enabled && geoip.retrieveCountry);
+        $('#peersTable').toggleClass('no-country', !geoipActive);
+
+        var peersHtml = '';
+
+        for (var i = 0; i < pid.length; i++) {
+          var flagHtml = '';
+          if (peers[pid[i]].country) {
+            // The country value is e.g. "AU (Sydney)"; translate the code
+            // and keep the city suffix, like the desktop column
+            var cc = peers[pid[i]].country.substr(0, 2);
+            var countryText = ((theUILang.country && theUILang.country[cc]) || cc) + peers[pid[i]].country.substr(2);
+            flagHtml = '<img class="peer-flag" src="plugins/geoip/flags/' + cc.toLowerCase() + '.gif" alt="' + escapeHTML(cc) + '"/> ' + escapeHTML(countryText);
+          }
+          peersHtml += '<tr data-pid="' + pid[i] + '" data-snubbed="' + (peers[pid[i]].snubbed ? 1 : 0) + '">' +
+          '<td class="country-cell">' + flagHtml + '</td>' +
+          '<td>' + peers[pid[i]].ip + ':' +  peers[pid[i]].port + '</td>' +
+          '<td>' + escapeHTML(peers[pid[i]].version) + '</td>' +
+          '<td>' + escapeHTML(peers[pid[i]].flags) + '</td>' +
+          '<td>' + peers[pid[i]].done + '%</td>' +
+          '<td>' + theConverter.bytes(peers[pid[i]].downloaded,2) + '</td>' +
+          '<td>' + theConverter.bytes(peers[pid[i]].uploaded,2) + '</td>' +
+          '<td>' + theConverter.speed(peers[pid[i]].dl) + '</td>' +
+          '<td>' + theConverter.speed(peers[pid[i]].ul) + '</td>' +
+          '<td>' + theConverter.speed(peers[pid[i]].peerdl) + '</td>' +
+          '<td>' + theConverter.bytes(peers[pid[i]].peerdownloaded,2) + '</td>' +
+          '</tr>';
+        }
+
+        $('#peersTable tbody').html(peersHtml);
+
+        // Restore the selection across periodic refreshes; drop it only if
+        // the peer is gone from the list (e.g. after a ban/kick)
+        plugin.selectedPeer = null;
+        if (selected && peers[selected.id] != undefined) {
+          $('#peersTable tbody tr').each(function() {
+            if ($(this).data('pid') == selected.id) {
+              $(this).addClass('info');
+              plugin.selectedPeer = {id: selected.id, snubbed: !!peers[selected.id].snubbed};
+            }
+          });
+        }
+        $('#peerBanBtn, #peerKickBtn, #peerSnubBtn').prop('disabled', plugin.selectedPeer === null);
+        $('#peerSnubBtn').text((plugin.selectedPeer && plugin.selectedPeer.snubbed) ? theUILang.peerUnsnub : theUILang.peerSnub);
+      }
+    });
+  }
+};
+
+/*** Torrent details: Trackers tab ***/
 plugin.loadTrackers = function() {
   if (this.torrent != undefined) {
     var hash = this.torrent.hash;
@@ -961,72 +1044,7 @@ plugin.refreshTrackers = function() {
   });
 };
 
-plugin.loadPeers = function() {
-  if (this.torrent != undefined) {
-    var hash = this.torrent.hash;
-    this.request('?action=getpeers&hash=' + hash, function(data) {
-      var peers = data;
-      var pid = Object.keys(peers);
-      if (hash == mobile.torrent.hash) {
-        var tableHeight = $(window).height() - $('#mainNavbar').outerHeight(true) - ($('#torrentDetails .nav').outerHeight(true) + $('#torrentDetailsHeader').outerHeight(true) + ($('#torrentDetailsHeader #torrentProgress').outerHeight(true) - $('#torrentDetailsHeader #torrentProgress').outerHeight()));
-        $('div.tableFixHead').css("max-height", tableHeight + "px");
-        
-        var selected = plugin.selectedPeer;
-
-        // The geoip plugin's getpeers hook annotates peers with a country
-        // code; render the same flag images the desktop table shows
-        var geoip = thePlugins.get('geoip');
-        var geoipActive = !!(geoip && geoip.enabled && geoip.retrieveCountry);
-        $('#peersTable').toggleClass('no-country', !geoipActive);
-
-        var peersHtml = '';
-
-        for (var i = 0; i < pid.length; i++) {
-          var flagHtml = '';
-          if (peers[pid[i]].country) {
-            // The country value is e.g. "AU (Sydney)"; translate the code
-            // and keep the city suffix, like the desktop column
-            var cc = peers[pid[i]].country.substr(0, 2);
-            var countryText = ((theUILang.country && theUILang.country[cc]) || cc) + peers[pid[i]].country.substr(2);
-            flagHtml = '<img class="peer-flag" src="plugins/geoip/flags/' + cc.toLowerCase() + '.gif" alt="' + escapeHTML(cc) + '"/> ' + escapeHTML(countryText);
-          }
-          peersHtml += '<tr data-pid="' + pid[i] + '" data-snubbed="' + (peers[pid[i]].snubbed ? 1 : 0) + '">' +
-          '<td class="country-cell">' + flagHtml + '</td>' +
-          '<td>' + peers[pid[i]].ip + ':' +  peers[pid[i]].port + '</td>' +
-          '<td>' + escapeHTML(peers[pid[i]].version) + '</td>' +
-          '<td>' + escapeHTML(peers[pid[i]].flags) + '</td>' +
-          '<td>' + peers[pid[i]].done + '%</td>' +
-          '<td>' + theConverter.bytes(peers[pid[i]].downloaded,2) + '</td>' +
-          '<td>' + theConverter.bytes(peers[pid[i]].uploaded,2) + '</td>' +
-          '<td>' + theConverter.speed(peers[pid[i]].dl) + '</td>' +
-          '<td>' + theConverter.speed(peers[pid[i]].ul) + '</td>' +
-          '<td>' + theConverter.speed(peers[pid[i]].peerdl) + '</td>' +
-          '<td>' + theConverter.bytes(peers[pid[i]].peerdownloaded,2) + '</td>' +
-          '</tr>';
-        }
-
-        $('#peersTable tbody').html(peersHtml);
-
-        // Restore the selection across periodic refreshes; drop it only if
-        // the peer is gone from the list (e.g. after a ban/kick)
-        plugin.selectedPeer = null;
-        if (selected && peers[selected.id] != undefined) {
-          $('#peersTable tbody tr').each(function() {
-            if ($(this).data('pid') == selected.id) {
-              $(this).addClass('info');
-              plugin.selectedPeer = {id: selected.id, snubbed: !!peers[selected.id].snubbed};
-            }
-          });
-        }
-        $('#peerBanBtn, #peerKickBtn, #peerSnubBtn').prop('disabled', plugin.selectedPeer === null);
-        $('#peerSnubBtn').text((plugin.selectedPeer && plugin.selectedPeer.snubbed) ? theUILang.peerUnsnub : theUILang.peerSnub);
-      }
-    });
-  }
-};
-
-plugin.files = undefined;
-
+/*** Torrent details: Files tab ***/
 plugin.getDir = function(p) {
   var path = p.split('/');
   if ((path[0] == '') && (path.length == 1)) {
@@ -1225,6 +1243,7 @@ plugin.refreshFiles = function() {
   });
 }
 
+/*** Torrent actions (bottom bar and delete page) ***/
 plugin.start = function() {
   if (this.torrent != undefined) {
     var status = this.torrent.state;
@@ -1294,6 +1313,7 @@ plugin.deleteConfirmed = function() {
   this.showList();
 };
 
+/*** Directory browser and save-path pages ***/
 plugin.chooseGetDir = function(path) {
   $(plugin.getDirTarget || '#dir_edit').val(path);
   history.go(-1);
@@ -1404,6 +1424,7 @@ plugin.sendDataDir = function() {
   });
 };
 
+/*** Optional plugin integrations (ratio, throttle, seedingtime) ***/
 plugin.loadRatio = function () {
   var ratio = thePlugins.get("ratio");
   if (ratio.allStuffLoaded) {
@@ -1415,7 +1436,7 @@ plugin.loadRatio = function () {
     });
     $('#torrentRatioGrp').html(ratioHTML);
     $('#ratiogrp').children('td:first').text(theUILang.ratio);
-    
+
     rTorrentStub.prototype.setratio = function()
     {
       for(var i=0; i<this.vs.length; i++)
@@ -1465,7 +1486,7 @@ plugin.loadThrottle = function () {
     });
     $('#torrentChannel').html(throttleHTML);
     $('#throttle').children('td:first').text(theUILang.throttle);
-  
+
     rTorrentStub.prototype.setthrottle = function()
     {
       for(var i=0; i<this.vs.length; i++)
@@ -1509,6 +1530,7 @@ plugin.loadSeedingTime = function () {
   }
 };
 
+/*** Torrent list rendering and updates ***/
 plugin.dynamicSort = function (property) {
   var sortOrder = 1;
   if(property[0] === "-") {
@@ -1755,6 +1777,7 @@ plugin.update = function(singleUpdate) {
   }, function() {}, function() {});
 };
 
+/*** Bootstrapping: device detection, plugin takeover and initialization ***/
 plugin.disableOthers = function() {
   var start = (window.location.href.indexOf('mobile=1') > 0);
 
@@ -1776,9 +1799,9 @@ plugin.disableOthers = function() {
     dxSTable.prototype.refreshRows = function( height, fromScroll ) { }
 
     dxSTable.prototype.getAttr = function (row, attrName) { }
-    
+
     dxSTable.prototype.setAttr = function(row, attr) { }
-    
+
     dxSTable.prototype.setIcon = function(row, icon) { }
 
     theWebUI.filterByLabel = function() { }
@@ -1799,8 +1822,8 @@ plugin.disableOthers = function() {
     plugin.config = theWebUI.config;
     theWebUI.config = function(data)
     {
-    	plugin.config.call(this,data);
-    	plugin.init();
+      plugin.config.call(this,data);
+      plugin.init();
     }
   } else {
     this.disable();
@@ -2012,37 +2035,37 @@ plugin.init = function() {
         $('#confirmTorrentDelete h5').after(
           '<div class="checkbox"><label id="deleteWithData">' +
           '<input type="checkbox"> ' + theUILang.Delete_data + '</label></div>');
-
-          plugin.eraseWithDataLoaded = true;
-        }
-        
-        if (thePlugins.isInstalled('throttle')) {
-          plugin.throttleLoaded = true;
-          plugin.loadThrottle();
-        }
-        
-        if (thePlugins.isInstalled('ratio')) {
-          plugin.ratioGroupsLoaded = true;
-          plugin.loadRatio();
-        }
-
-        if (thePlugins.isInstalled('_getdir')) {
-          $('#dirEditBlock').append('<input type="button" class="btn btn-outline-secondary btn-sm" id="showGetDir" onclick="mobile.showGetDir();" value="...">');
-          $('#dataDirEditBlock').append('<input type="button" class="btn btn-outline-secondary btn-sm" id="showGetDirDataDir" onclick="mobile.showGetDir(\'#datadir_edit\');" value="...">');
-        }
-
-        if (thePlugins.isInstalled('datadir')) {
-          plugin.dataDirLoaded = true;
-        }
-        
-        if (thePlugins.isInstalled('seedingtime')) {
-          plugin.seedingtimeLoaded = true;
-          plugin.loadSeedingTime();
-        }
-        // One-shot fetch for the initial paint; periodic refreshes arrive
-        // through the theWebUI.addTorrents hook above
-        plugin.update(true);
+        plugin.eraseWithDataLoaded = true;
       }
+
+      if (thePlugins.isInstalled('throttle')) {
+        plugin.throttleLoaded = true;
+        plugin.loadThrottle();
+      }
+
+      if (thePlugins.isInstalled('ratio')) {
+        plugin.ratioGroupsLoaded = true;
+        plugin.loadRatio();
+      }
+
+      if (thePlugins.isInstalled('_getdir')) {
+        $('#dirEditBlock').append('<input type="button" class="btn btn-outline-secondary btn-sm" id="showGetDir" onclick="mobile.showGetDir();" value="...">');
+        $('#dataDirEditBlock').append('<input type="button" class="btn btn-outline-secondary btn-sm" id="showGetDirDataDir" onclick="mobile.showGetDir(\'#datadir_edit\');" value="...">');
+      }
+
+      if (thePlugins.isInstalled('datadir')) {
+        plugin.dataDirLoaded = true;
+      }
+
+      if (thePlugins.isInstalled('seedingtime')) {
+        plugin.seedingtimeLoaded = true;
+        plugin.loadSeedingTime();
+      }
+
+      // One-shot fetch for the initial paint; periodic refreshes arrive
+      // through the theWebUI.addTorrents hook above
+      plugin.update(true);
+    }
   });
 };
 
@@ -2098,13 +2121,13 @@ plugin.onLangLoaded = function() {
   $('#dataDirFastResume').append(' ' + theUILang.doFastResume);
   $('#dataDirOk').text(theUILang.ok);
   $('#dataDirCancel').text(theUILang.Cancel);
-  
+
   $('#sortAsc').append(' ' + theUILang.acs);
   $('#sortDesc').append(' ' + theUILang.decs);
   $('#sortOption').parent().children('label').children('h5').text(theUILang.SortTorrents);
   $('#sortOk').text(theUILang.ok);
   $('#sortCancel').text(theUILang.Cancel);
-  
+
   $('#peersTable th').each(function(n, v) {
     $(v).text(theUILang[peersIdToLangId[v.id]]);
   });

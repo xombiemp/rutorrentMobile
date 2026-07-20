@@ -363,7 +363,7 @@ h5, #detailsTrackersPage a, #detailsTrackersPage .accordion-button, #detailsFile
   white-space: nowrap;
 }
 #torrentDetails #detailsDetailsPage tr td:last-child {
- word-break: break-all; 
+ word-break: break-all;
 }
 #torrentDetails #detailsDetailsPage #label input {
   display: inline;

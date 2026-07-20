@@ -34,15 +34,15 @@ true by default. This option sets whether mobile devices will be autodetected to
 true by default. This option sets whether to include tablets in the autodetection.
 
 #### plugin.eraseWithDataDefault
-false by default. This option sets the default state of the delete with data checkbox in the confirmation page when deleting a torrent.  
+false by default. This option sets the default state of the delete with data checkbox in the confirmation page when deleting a torrent.
 If in rutorrent you turned off 'Confirm when deleting torrents', this plugin will not display the confirmaion page either. In this case, the decision about deleting data will be determined by the value of this option.
 
 #### plugin.sort
-'name' by default. Possible values: 'name', '-name', 'status', '-status', 'size', '-size', 'uploaded', '-uploaded', 'downloaded', '-downloaded', 'done', '-done', 'eta', '-eta', 'ul', '-ul', 'dl', '-dl', 'ratio', '-ratio', and if the seedingtime plugin is loaded 'addtime', '-addtime', 'seedingtime', '-seedingtime'.  
+'name' by default. Possible values: 'name', '-name', 'status', '-status', 'size', '-size', 'uploaded', '-uploaded', 'downloaded', '-downloaded', 'done', '-done', 'eta', '-eta', 'ul', '-ul', 'dl', '-dl', 'ratio', '-ratio', and if the seedingtime plugin is loaded 'addtime', '-addtime', 'seedingtime', '-seedingtime'.
 This option sets the default sort value of the torrent list. Without negative it's ascending, with negative it's descending.
 
 #### plugin.accentColor
-'primary' by default. Possible values: 'primary' (blue), 'secondary' (gray), 'success' (green), 'danger' (red), 'warning' (yellow), 'info' (cyan), 'dark' (near-black).  
+'primary' by default. Possible values: 'primary' (blue), 'secondary' (gray), 'success' (green), 'danger' (red), 'warning' (yellow), 'info' (cyan), 'dark' (near-black).
 This option sets the Bootstrap theme color used for buttons, progress bars, tab highlights and selections. The color can also be changed temporarily from the settings page; a page reload reverts to this option.
 
 ### Utilization
