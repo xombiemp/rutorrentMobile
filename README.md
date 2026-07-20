@@ -3,7 +3,7 @@
 A touch-friendly mobile interface for ruTorrent. When a phone or tablet is detected (or `?mobile=1` is added to the URL), it replaces the desktop UI with a compact single-column layout: torrent list with filtering and sorting, torrent details (general info, trackers, files, peers), adding torrents, speed limits and server status.
 
 ### Prereqs
-This plugin requires the httprpc plugin.
+This plugin requires a working RPC transport, the same one the desktop UI uses. The httprpc plugin is the recommended and most-tested setup; a direct XML-RPC mount (e.g. mod_scgi or nginx scgi_pass) should also work.
 
 ### Optional plugins
 These plugins add additional functionality when installed:
@@ -43,6 +43,6 @@ If you set plugin.enableAutodetect to true, the plugin will automaticaly load wh
 
 ### Troubleshooting
 If you are experiencing problems with this plugin, for example it's not scrolling or there are overlapping elements, try these solutions.
-* Make sure the httprpc plugin is installed. The mobile plugin requires it.
+* Make sure the desktop UI can talk to rTorrent (a working httprpc plugin or XML-RPC mount); the mobile plugin uses the same connection.
 * Make sure the plugin directory is named 'mobile' or else it won't load the plugin specific css file called mobile.css
 * If you are still having issues, submit an issue on github https://github.com/Novik/ruTorrent/issues and be sure to include as much detail as possible including: mobile device and OS and browser, server OS and webserver.
