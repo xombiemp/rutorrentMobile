@@ -201,7 +201,7 @@ plugin.setHash = function(page) {
 };
 
 plugin.showAlert = function(message,alerttype) {
-  $('#alert_placeholder').append('<div id="alertdiv" class="alert alert-dismissible fade show navbar-fixed-top '+ alerttype +'" role="alert">'+ message +'<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+  $('#alert_placeholder').append('<div id="alertdiv" class="alert alert-dismissible fade show navbar-fixed-top '+ alerttype +'" role="alert">'+ escapeHTML(message) +'<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
   setTimeout(function() {
     $('#alertdiv').removeClass('show');
     setTimeout(function() {
@@ -919,7 +919,7 @@ plugin.loadTrackers = function() {
           trackersHtml +=
           '<div class="accordion-item"><h2 class="accordion-header">' +
           '<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#tracker' + i + '">' +
-          trackers[i].name + '</button></h2>' +
+          escapeHTML(trackers[i].name) + '</button></h2>' +
           '<div id="tracker' + i + '" class="accordion-collapse collapse" data-bs-parent="#trackersAccordion"><div class="accordion-body">' +
           '<table class=" table table-striped"><tbody>' +
           '<tr><td>' + theUILang.Type + '</td><td>' + theFormatter.trackerType(trackers[i].type) + '</td></tr>' +
@@ -1016,13 +1016,13 @@ plugin.loadPeers = function() {
             // and keep the city suffix, like the desktop column
             var cc = peers[pid[i]].country.substr(0, 2);
             var countryText = ((theUILang.country && theUILang.country[cc]) || cc) + peers[pid[i]].country.substr(2);
-            flagHtml = '<img class="peer-flag" src="plugins/geoip/flags/' + cc.toLowerCase() + '.gif" alt="' + cc + '"/> ' + countryText;
+            flagHtml = '<img class="peer-flag" src="plugins/geoip/flags/' + cc.toLowerCase() + '.gif" alt="' + escapeHTML(cc) + '"/> ' + escapeHTML(countryText);
           }
           peersHtml += '<tr data-pid="' + pid[i] + '" data-snubbed="' + (peers[pid[i]].snubbed ? 1 : 0) + '">' +
           '<td class="country-cell">' + flagHtml + '</td>' +
           '<td>' + peers[pid[i]].ip + ':' +  peers[pid[i]].port + '</td>' +
-          '<td>' + peers[pid[i]].version + '</td>' +
-          '<td>' + peers[pid[i]].flags + '</td>' +
+          '<td>' + escapeHTML(peers[pid[i]].version) + '</td>' +
+          '<td>' + escapeHTML(peers[pid[i]].flags) + '</td>' +
           '<td>' + peers[pid[i]].done + '%</td>' +
           '<td>' + theConverter.bytes(peers[pid[i]].downloaded,2) + '</td>' +
           '<td>' + theConverter.bytes(peers[pid[i]].uploaded,2) + '</td>' +
@@ -1097,12 +1097,15 @@ plugin.getFilesList = function(s) {
   return ret;
 }
 
+// File and directory names come from the torrent, so build this page with
+// DOM nodes and .text()/bound handlers (never string-concatenated HTML or
+// inline onclick attributes)
 plugin.drawFiles = function(p) {
   var vars = this.getDir(p);
   var realPath = vars[0];
   var dir = vars[1];
 
-  var filesHtml = '';
+  var container = $('#detailsFilesPage').empty();
 
   if (!dir.root) {
     var i = realPath.lastIndexOf('/');
@@ -1110,44 +1113,56 @@ plugin.drawFiles = function(p) {
       i = 0;
     }
     var upperDir = realPath.substr(0, i);
-    filesHtml += '<a href="javascript://void();" onclick="mobile.drawFiles(\'' + upperDir + '\');">' +
-    '<i class="bi bi-folder2-open icon-black"></i> ..</a><hr>';
+    container.append(
+      $('<a href="javascript://void();"><i class="bi bi-folder2-open icon-black"></i> ..</a>')
+        .click(function() {mobile.drawFiles(upperDir);}),
+      $('<hr>'));
   }
 
-  for (var name in dir.container) {
-    filesHtml += '<div>' +
-    '<div class="hiddenPath">' + realPath + '/' + name + '</div>' +
-    '<button onclick="mobile.toogleDisplay($(this).parent().find(\'.prioritySelect\'));" class="btn btn-outline-secondary btn-sm pull-right"><i class="bi bi-list-ul icon-black"></i></button>'
-    if (dir.container[name].directory) {
-      filesHtml += '<a href="javascript://void();" onclick="mobile.drawFiles(\'' + realPath + '/' + name + '\');">' +
-      '<i class="bi bi-folder2-open icon-black"></i>&nbsp;' + name + '</a>';
+  $.each(dir.container, function(name, entry) {
+    var path = realPath + '/' + name;
+    var block = $('<div></div>');
+
+    block.append(
+      $('<button class="btn btn-outline-secondary btn-sm pull-right"><i class="bi bi-list-ul icon-black"></i></button>')
+        .click(function() {mobile.toogleDisplay($(this).parent().find('.prioritySelect'));}));
+
+    if (entry.directory) {
+      block.append(
+        $('<a href="javascript://void();"><i class="bi bi-folder2-open icon-black"></i>&nbsp;</a>')
+          .append(document.createTextNode(name))
+          .click(function() {mobile.drawFiles(path);}));
     } else {
-      var idName = 'file' + dir.container[name].id;
-      var filePercent = (dir.container[name].size > 0) ? Math.min(100, Math.round(dir.container[name].done / dir.container[name].size * 1000) / 10) : 100;
-      filesHtml += '<a href="javascript://void();" onclick="mobile.toogleDisplay($(\'#' + idName + '\'));">' +
-      '<i class="bi bi-file-earmark icon-black"></i>&nbsp;' + name + '</a><div style="display:none;" id="' + idName + '">' +
-      '<table class="table table-striped"><tbody>' +
-      '<tr><td>' + theUILang.Done + '</td><td>' + theConverter.bytes(dir.container[name].done) + ' (' + filePercent + '%)</td></tr>' +
-      '<tr><td>' + theUILang.Size + '</td><td>' + theConverter.bytes(dir.container[name].size) + '</td></tr>' +
-      '</tbody></table></div>';
+      var filePercent = (entry.size > 0) ? Math.min(100, Math.round(entry.done / entry.size * 1000) / 10) : 100;
+      var info = $('<div style="display:none;" id="file' + entry.id + '">' +
+        '<table class="table table-striped"><tbody>' +
+        '<tr><td>' + theUILang.Done + '</td><td>' + theConverter.bytes(entry.done) + ' (' + filePercent + '%)</td></tr>' +
+        '<tr><td>' + theUILang.Size + '</td><td>' + theConverter.bytes(entry.size) + '</td></tr>' +
+        '</tbody></table></div>');
+      block.append(
+        $('<a href="javascript://void();"><i class="bi bi-file-earmark icon-black"></i>&nbsp;</a>')
+          .append(document.createTextNode(name))
+          .click(function() {mobile.toogleDisplay(info);}),
+        info);
     }
-    filesHtml += '<select class="prioritySelect" style="display:none;">' +
-    '<option disabled ' + ((dir.container[name].priority == -1) ? 'selected' : '') + '></option>' +
-    '<option value="2" ' + ((dir.container[name].priority == 2) ? 'selected' : '') + '>' + theUILang.High_priority + '</option>' +
-    '<option value="1" ' + ((dir.container[name].priority == 1) ? 'selected' : '') + '>' + theUILang.Normal_priority + '</option>' +
-    '<option value="0" ' + ((dir.container[name].priority == 0) ? 'selected' : '') + '>' + theUILang.Dont_download + '</option>' +
-    '</select></div><hr/>';
 
-  }
+    block.append($('<select class="prioritySelect" style="display:none;">' +
+      '<option disabled ' + ((entry.priority == -1) ? 'selected' : '') + '></option>' +
+      '<option value="2" ' + ((entry.priority == 2) ? 'selected' : '') + '>' + theUILang.High_priority + '</option>' +
+      '<option value="1" ' + ((entry.priority == 1) ? 'selected' : '') + '>' + theUILang.Normal_priority + '</option>' +
+      '<option value="0" ' + ((entry.priority == 0) ? 'selected' : '') + '>' + theUILang.Dont_download + '</option>' +
+      '</select>').data('path', path));
 
-  $('#detailsFilesPage').html(filesHtml);
+    container.append(block, $('<hr/>'));
+  });
+
   $('#detailsFilesPage select').change(function() {
     var newValue = $(this).val();
     if (newValue < 0) {
       return;
     }
 
-    var vars = plugin.getDir($(this).parent().find('.hiddenPath').text());
+    var vars = plugin.getDir($(this).data('path'));
 
     var filesList = '';
     if (!vars[1].directory) {
@@ -1289,7 +1304,7 @@ plugin.delete = function() {
       $('#deleteWithData input').prop('checked', this.eraseWithDataDefault);
     }
     if (theWebUI.settings["webui.confirm_when_deleting"]) {
-      $('#confimTorrentDelete h5').html('<span id="confirmText">' + theUILang.Rem_torrents_prompt + '</span><hr />' + this.torrent.name);
+      $('#confimTorrentDelete h5').html('<span id="confirmText">' + theUILang.Rem_torrents_prompt + '</span><hr />' + escapeHTML(this.torrent.name));
       this.showPage('confimTorrentDelete');
     } else {
       this.deleteConfimed();
@@ -1613,8 +1628,8 @@ plugin.processTorrents = function(torrents, singleUpdate) {
       if ( ! row.length || singleUpdate) {
         listHtmlString +=
         '<tr id="' + v.hash + '" class="torrentBlock status' + statusClass + ' state' + stateClass + ' error' + errorClass + ' label' + plugin.labelIds[v.label] + '" onclick="mobile.showDetails(this.id);"><td>' +
-        '<h5>' + v.name + '</h5>' +
-        '<span>' + status[1] + ((v.ul) ? ' ↑' + theConverter.speed(v.ul) : '') + ((v.dl) ? ' ↓' + theConverter.speed(v.dl) : '') + ' | ' + ((status[1] == 'Downloading') ? (theUILang.ETA + ' ' + ((v.eta ==- 1) ? "&#8734;" : theConverter.time(v.eta))) : (theUILang.Ratio + ' ' + ((v.ratio ==- 1) ? "&#8734;" : theConverter.round(v.ratio/1000,3)))) + ((v.msg) ? ' | <i class="text-danger">' + v.msg + '</i>' : '') + '</span>' +
+        '<h5>' + escapeHTML(v.name) + '</h5>' +
+        '<span>' + status[1] + ((v.ul) ? ' ↑' + theConverter.speed(v.ul) : '') + ((v.dl) ? ' ↓' + theConverter.speed(v.dl) : '') + ' | ' + ((status[1] == 'Downloading') ? (theUILang.ETA + ' ' + ((v.eta ==- 1) ? "&#8734;" : theConverter.time(v.eta))) : (theUILang.Ratio + ' ' + ((v.ratio ==- 1) ? "&#8734;" : theConverter.round(v.ratio/1000,3)))) + ((v.msg) ? ' | <i class="text-danger">' + escapeHTML(v.msg) + '</i>' : '') + '</span>' +
         '<div class="progress">' +
         '<div class="progress-bar progress-bar-striped' + ((v.done == 1000) ? '' : ' progress-bar-animated') + '" style="width: ' + percent + '%;"></div>' +
         '<span class="progress-label" style="width: ' + percent + '%;">' + percent + '% ' + theUILang.of + ' ' + theConverter.bytes(v.size,2) + '</span>' +
@@ -1625,7 +1640,7 @@ plugin.processTorrents = function(torrents, singleUpdate) {
       } else if ( ! plugin.rowsPrev[v.hash] || ! isEqual(rowsNow[v.hash], plugin.rowsPrev[v.hash]) ) {
         row.removeClass();
         row.addClass('torrentBlock status' + statusClass + ' state' + stateClass + ' error' + errorClass + ' label' + plugin.labelIds[v.label]);
-        row.find('span').html(status[1] + ((v.ul) ? ' ↑' + theConverter.speed(v.ul) : '') + ((v.dl) ? ' ↓' + theConverter.speed(v.dl) : '') + ' | ' + ((status[1] == 'Downloading') ? (theUILang.ETA + ' ' + ((v.eta ==- 1) ? "&#8734;" : theConverter.time(v.eta))) : (theUILang.Ratio + ' ' + ((v.ratio ==- 1) ? "&#8734;" : theConverter.round(v.ratio/1000,3)))) + ((v.msg) ? ' | <i class="text-danger">' + v.msg + '</i>' : ''));
+        row.find('span').html(status[1] + ((v.ul) ? ' ↑' + theConverter.speed(v.ul) : '') + ((v.dl) ? ' ↓' + theConverter.speed(v.dl) : '') + ' | ' + ((status[1] == 'Downloading') ? (theUILang.ETA + ' ' + ((v.eta ==- 1) ? "&#8734;" : theConverter.time(v.eta))) : (theUILang.Ratio + ' ' + ((v.ratio ==- 1) ? "&#8734;" : theConverter.round(v.ratio/1000,3)))) + ((v.msg) ? ' | <i class="text-danger">' + escapeHTML(v.msg) + '</i>' : ''));
         var progressBar = row.find('.progress-bar');
         progressBar.removeClass('progress-bar-animated');
         if (v.done != 1000) {
