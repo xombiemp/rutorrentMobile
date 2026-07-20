@@ -1,9 +1,9 @@
 /*
  * PLUGIN MOBILE
  *
- * Portuguese language file.
+ * Portuguese (Brazil) language file.
  *
- * Author: 
+ * Author:
  */
 
  theUILang.SortTorrents    = "Sort torrents by";

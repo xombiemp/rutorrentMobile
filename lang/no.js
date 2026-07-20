@@ -1,7 +1,7 @@
 /*
  * PLUGIN MOBILE
  *
- * Russian language file.
+ * Norwegian language file.
  *
  * Author:
  */

@@ -3,7 +3,7 @@
  *
  * German language file.
  *
- * Author: 
+ * Author:
  */
 
  theUILang.SortTorrents    = "Sortiere torrents nach";

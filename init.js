@@ -2087,5 +2087,6 @@ if ((plugin.tabletsDetect) && (!jQuery.browser.mobile)) {
     (!!window.matchMedia && window.matchMedia('(pointer: coarse) and (hover: none)').matches);
 }
 
-mobile = plugin;
+// Global alias used by the inline handlers in mobile.html and generated markup
+window.mobile = plugin;
 plugin.disableOthers();

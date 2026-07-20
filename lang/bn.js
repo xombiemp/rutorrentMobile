@@ -1,7 +1,7 @@
 /*
  * PLUGIN MOBILE
  *
- * Russian language file.
+ * Bengali language file.
  *
  * Author:
  */

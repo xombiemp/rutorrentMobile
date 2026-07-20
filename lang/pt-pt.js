@@ -1,7 +1,7 @@
 /*
  * PLUGIN MOBILE
  *
- * Russian language file.
+ * Portuguese (Portugal) language file.
  *
  * Author:
  */

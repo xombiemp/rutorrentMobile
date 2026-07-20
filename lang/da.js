@@ -3,7 +3,7 @@
  *
  * Danish language file.
  *
- * Author: 
+ * Author:
  */
 
  theUILang.SortTorrents    = "Sort torrents by";
