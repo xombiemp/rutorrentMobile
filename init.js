@@ -24,7 +24,7 @@ plugin.eraseWithDataLoaded = false;
 plugin.ratioGroupsLoaded = false;
 plugin.throttleLoaded = false;
 plugin.seedingtimeLoaded = false;
-plugin.getDirLoaded = false;
+plugin.dataDirLoaded = false;
 var pageToHash = {
   'torrentsList': '',
   'torrentDetails': 'details',
@@ -32,7 +32,7 @@ var pageToHash = {
   'torrentSort': 'sort',
   'torrentFilter': 'filter',
   'addTorrent': 'add',
-  'confimTorrentDelete': 'delete',
+  'confirmTorrentDelete': 'delete',
   'torrentDataDir': 'savepath',
   'getDirList': 'filesystem'
 };
@@ -109,40 +109,22 @@ if(!$type(theWebUI.getTrackerName))
   }
 }
 
+// Nudge the scroll position when a form field loses focus, so iOS Safari
+// re-lays-out the fixed bars after the on-screen keyboard closes
 $(document).on('blur', 'input, select, textarea', function() {
   setTimeout(function() {
     $(window).scrollTop($(window).scrollTop()+1);
   }, 0);
 });
 
+// Shallow-compare two row snapshots (see plugin.rowSnapshot); both sides
+// always have the same keys
 var isEqual = function (a, b) {
-  // Create arrays of property names
-  var aProps = Object.getOwnPropertyNames(a);
-  var bProps = Object.getOwnPropertyNames(b);
-
-  // If number of properties is different,
-  // objects are not equivalent
-  if (aProps.length != bProps.length) {
+  for (var prop in a) {
+    if (a[prop] !== b[prop]) {
       return false;
+    }
   }
-
-  for (var i = 0; i < aProps.length; i++) {
-      var propName = aProps[i];
-
-      // Skip checking if these properties are equal
-      if (propName == 'free_diskspace') {
-        continue;
-      }
-
-      // If values of same property are not equal,
-      // objects are not equivalent
-      if (a[propName] !== b[propName]) {
-          return false;
-      }
-  }
-
-  // If we made it this far, objects
-  // are considered equivalent
   return true;
 };
 
@@ -157,7 +139,7 @@ plugin.getRatioData = function(id)
   return(curNo);
 };
 
-plugin.toogleDisplay = function(s) {
+plugin.toggleDisplay = function(s) {
   if (s.css('display') == 'none') {
     s.css('display', '')
   } else{
@@ -285,14 +267,13 @@ plugin.statusOptionText = function(opt) {
   return theUILang[opt.langId];
 };
 
-plugin.statusFilterClasses = {
-  downloading: '.statusDownloading',
-  completed: '.statusCompleted',
-  stopped: '.statusStopped',
-  active: '.stateActive',
-  inactive: '.stateInactive',
-  error: '.errorYes'
-};
+// value -> row-class selector, derived from statusFilterOptions
+plugin.statusFilterClasses = {};
+$.each(plugin.statusFilterOptions, function(i, opt) {
+  if (opt.value != 'all') {
+    plugin.statusFilterClasses[opt.value] = opt.countClass;
+  }
+});
 
 plugin.applyFilters = function() {
   // Drop filters whose label/tracker no longer exists in the torrent list
@@ -707,8 +688,8 @@ plugin.fillDetails = function(d) {
     $('#torrentDetails #seedtime td:last').text((d.seedingtime>3600*24*365) ? theConverter.time(new Date().getTime()/1000-(iv(d.seedingtime)+theWebUI.deltaTime/1000),true) : "");
     $('#torrentDetails #dateAdded td:last').text((d.addtime>3600*24*365) ? theConverter.date(iv(d.addtime)+theWebUI.deltaTime/1000) : "");
   }
-  $('#torrentDetails #eta td:last').html((d.eta ==- 1) ? "&#8734;" : theConverter.time(d.eta));
-  $('#torrentDetails #ratio td:last').html((d.ratio ==- 1) ? "&#8734;" : theConverter.round(d.ratio/1000,3));
+  $('#torrentDetails #eta td:last').html((d.eta == -1) ? "&#8734;" : theConverter.time(d.eta));
+  $('#torrentDetails #ratio td:last').html((d.ratio == -1) ? "&#8734;" : theConverter.round(d.ratio/1000,3));
   $('#torrentDetails #downloadSpeed td:last').text(theConverter.speed(d.dl));
   $('#torrentDetails #wasted td:last').text(theConverter.bytes(d.skip_total,2));
   $('#torrentDetails #uploaded td:last').text(theConverter.bytes(d.uploaded,2));
@@ -890,10 +871,6 @@ plugin.peerAction = function(cmd, arg) {
     self.loadPeers();
   });
 };
-
-plugin.toogleTrackerInfo = function(s) {
-  this.toogleDisplay($(s).parent().find('div'));
-}
 
 plugin.loadTrackers = function() {
   if (this.torrent != undefined) {
@@ -1120,7 +1097,7 @@ plugin.drawFiles = function(p) {
 
     block.append(
       $('<button class="btn btn-outline-secondary btn-sm pull-right"><i class="bi bi-list-ul icon-black"></i></button>')
-        .click(function() {mobile.toogleDisplay($(this).parent().find('.prioritySelect'));}));
+        .click(function() {mobile.toggleDisplay($(this).parent().find('.prioritySelect'));}));
 
     if (entry.directory) {
       block.append(
@@ -1137,7 +1114,7 @@ plugin.drawFiles = function(p) {
       block.append(
         $('<a href="javascript://void();"><i class="bi bi-file-earmark icon-black"></i>&nbsp;</a>')
           .append(document.createTextNode(name))
-          .click(function() {mobile.toogleDisplay(info);}),
+          .click(function() {mobile.toggleDisplay(info);}),
         info);
     }
 
@@ -1299,15 +1276,15 @@ plugin.delete = function() {
       $('#deleteWithData input').prop('checked', this.eraseWithDataDefault);
     }
     if (theWebUI.settings["webui.confirm_when_deleting"]) {
-      $('#confimTorrentDelete h5').html('<span id="confirmText">' + theUILang.Rem_torrents_prompt + '</span><hr />' + escapeHTML(this.torrent.name));
-      this.showPage('confimTorrentDelete');
+      $('#confirmTorrentDelete h5').html('<span id="confirmText">' + theUILang.Rem_torrents_prompt + '</span><hr />' + escapeHTML(this.torrent.name));
+      this.showPage('confirmTorrentDelete');
     } else {
-      this.deleteConfimed();
+      this.deleteConfirmed();
     }
   }
 };
 
-plugin.deleteConfimed = function() {
+plugin.deleteConfirmed = function() {
   if ((this.eraseWithDataLoaded) && ($('#deleteWithData input').prop('checked'))) {
     this.request('?action=removewithdata&hash=' + this.torrent.hash);
   } else {
@@ -1609,7 +1586,6 @@ plugin.processTorrents = function(torrents, singleUpdate) {
     var rowsNow = {};
 
     $.each(torrentArray, function(n, v){
-      var status = [null, v.status];
       // Mirrors the desktop state panel grouping (see js/category-list.js),
       // except that any transfer counts as active (the desktop ignores
       // rates below 1 KiB/s)
@@ -1618,6 +1594,17 @@ plugin.processTorrents = function(torrents, singleUpdate) {
       var errorClass = (v.state & dStatus.error) ? 'Yes' : 'No';
       var percent = v.done / 10;
 
+      // The parts shared by row creation and in-place update
+      var rowClass = 'torrentBlock status' + statusClass + ' state' + stateClass + ' error' + errorClass + ' label' + plugin.labelIds[v.label];
+      var statusHtml = v.status +
+        ((v.ul) ? ' ↑' + theConverter.speed(v.ul) : '') +
+        ((v.dl) ? ' ↓' + theConverter.speed(v.dl) : '') +
+        ' | ' + ((statusClass == 'Downloading')
+          ? (theUILang.ETA + ' ' + ((v.eta == -1) ? "&#8734;" : theConverter.time(v.eta)))
+          : (theUILang.Ratio + ' ' + ((v.ratio == -1) ? "&#8734;" : theConverter.round(v.ratio/1000,3)))) +
+        ((v.msg) ? ' | <i class="text-danger">' + escapeHTML(v.msg) + '</i>' : '');
+      var progressLabel = percent + '% ' + theUILang.of + ' ' + theConverter.bytes(v.size,2);
+
       tul += iv(v.ul);
       tdl += iv(v.dl);
       rowsNow[v.hash] = plugin.rowSnapshot(v);
@@ -1625,27 +1612,27 @@ plugin.processTorrents = function(torrents, singleUpdate) {
       var row = $('#' + v.hash);
       if ( ! row.length || singleUpdate) {
         listHtmlString +=
-        '<tr id="' + v.hash + '" class="torrentBlock status' + statusClass + ' state' + stateClass + ' error' + errorClass + ' label' + plugin.labelIds[v.label] + '" onclick="mobile.showDetails(this.id);"><td>' +
+        '<tr id="' + v.hash + '" class="' + rowClass + '" onclick="mobile.showDetails(this.id);"><td>' +
         '<h5>' + escapeHTML(v.name) + '</h5>' +
-        '<span>' + status[1] + ((v.ul) ? ' ↑' + theConverter.speed(v.ul) : '') + ((v.dl) ? ' ↓' + theConverter.speed(v.dl) : '') + ' | ' + ((statusClass == 'Downloading') ? (theUILang.ETA + ' ' + ((v.eta ==- 1) ? "&#8734;" : theConverter.time(v.eta))) : (theUILang.Ratio + ' ' + ((v.ratio ==- 1) ? "&#8734;" : theConverter.round(v.ratio/1000,3)))) + ((v.msg) ? ' | <i class="text-danger">' + escapeHTML(v.msg) + '</i>' : '') + '</span>' +
+        '<span>' + statusHtml + '</span>' +
         '<div class="progress">' +
         '<div class="progress-bar progress-bar-striped' + ((v.done == 1000) ? '' : ' progress-bar-animated') + '" style="width: ' + percent + '%;"></div>' +
-        '<span class="progress-label" style="width: ' + percent + '%;">' + percent + '% ' + theUILang.of + ' ' + theConverter.bytes(v.size,2) + '</span>' +
+        '<span class="progress-label" style="width: ' + percent + '%;">' + progressLabel + '</span>' +
         '</div>' +
         '</td></tr>';
         listChanged = true;
         changedIds.push(v.hash);
       } else if ( ! plugin.rowsPrev[v.hash] || ! isEqual(rowsNow[v.hash], plugin.rowsPrev[v.hash]) ) {
         row.removeClass();
-        row.addClass('torrentBlock status' + statusClass + ' state' + stateClass + ' error' + errorClass + ' label' + plugin.labelIds[v.label]);
-        row.find('span').html(status[1] + ((v.ul) ? ' ↑' + theConverter.speed(v.ul) : '') + ((v.dl) ? ' ↓' + theConverter.speed(v.dl) : '') + ' | ' + ((statusClass == 'Downloading') ? (theUILang.ETA + ' ' + ((v.eta ==- 1) ? "&#8734;" : theConverter.time(v.eta))) : (theUILang.Ratio + ' ' + ((v.ratio ==- 1) ? "&#8734;" : theConverter.round(v.ratio/1000,3)))) + ((v.msg) ? ' | <i class="text-danger">' + escapeHTML(v.msg) + '</i>' : ''));
+        row.addClass(rowClass);
+        row.find('span').html(statusHtml);
         var progressBar = row.find('.progress-bar');
         progressBar.removeClass('progress-bar-animated');
         if (v.done != 1000) {
           progressBar.addClass('progress-bar-animated');
         }
         progressBar.css('width', percent + '%');
-        row.find('.progress-label').css('width', percent + '%').text(percent + '% ' +theUILang.of + ' ' +theConverter.bytes(v.size,2));
+        row.find('.progress-label').css('width', percent + '%').text(progressLabel);
         listChanged = true;
         changedIds.push(v.hash);
       }
@@ -1680,7 +1667,7 @@ plugin.processTorrents = function(torrents, singleUpdate) {
 
     $.each(plugin.rowsPrev, function(n, v){
       if ( ! plugin.torrents[n] ) {
-        listHtml.find($('#' + n)).remove();
+        $('#' + n).remove();
         listChanged = true;
       }
     });
@@ -1763,21 +1750,9 @@ plugin.processTorrents = function(torrents, singleUpdate) {
 };
 
 plugin.update = function(singleUpdate) {
-  theWebUI.requestWithTimeout("?list=1&getmsg=1",
-  function(data) {
+  theWebUI.requestWithTimeout("?list=1&getmsg=1", function(data) {
     plugin.processTorrents(data.torrents, singleUpdate);
-  },
-
-  function()
-  {
-    //TODO: Timeout
-  },
-
-  function(status,text)
-  {
-    //TODO: Error
-  }
-);
+  }, function() {}, function() {});
 };
 
 plugin.disableOthers = function() {
@@ -1810,8 +1785,13 @@ plugin.disableOthers = function() {
 
     theWebUI.loadTorrents = function() { }
 
+    // Plugins whose client side the mobile UI integrates with (see the
+    // optional plugins list in the README); all others are disabled while
+    // the mobile UI is active. Plugins the mobile UI only talks to through
+    // their PHP side (diskspace, check_port, tracklabels) need not be here.
+    var keepEnabled = ['rpc', 'httprpc', '_getdir', 'throttle', 'ratio', 'erasedata', 'seedingtime', 'datadir', 'geoip', 'mobile'];
     $.each(thePlugins.list, function(i, v) {
-      if (v.name != 'rpc' && v.name != 'httprpc' && v.name != '_getdir' && v.name != 'throttle' && v.name != 'ratio' && v.name != 'erasedata' && v.name != 'seedingtime' && v.name != 'datadir' && v.name != 'geoip' && v.name != 'mobile') {
+      if ($.inArray(v.name, keepEnabled) == -1) {
         v.disable();
       }
     });
@@ -1851,16 +1831,12 @@ plugin.init = function() {
     document.removeEventListener('touchend', ipad.touchEnd, false);
   }
 
-  setInterval(function() {plugin.backListener();}, 500);
+  $(window).on('hashchange', function() {plugin.backListener();});
 
   $.ajax({
     type: 'GET',
     url: this.path + 'mobile.html',
     processData: false,
-
-    error: function(XMLHttpRequest, textStatus, errorThrown) {
-      //TODO: Error
-    },
 
     success: function(data, textStatus) {
       $('body').html(data);
@@ -1965,9 +1941,12 @@ plugin.init = function() {
       }
       $("#addTorrentFile").submit(function()
       {
-        if(!$("#torrent_file").val().match(/\.torrent$/i)) {
-          plugin.showAlert(theUILang.Not_torrent_file,"alert-danger");
-          return(false);
+        var files = $("#torrent_file")[0].files;
+        for (var i = 0; i < files.length; i++) {
+          if (!files[i].name.match(/\.torrent$/i)) {
+            plugin.showAlert(theUILang.Not_torrent_file,"alert-danger");
+            return(false);
+          }
         }
         $('#torrentFileSend').prop('disabled', true);
         plugin.createiFrame();
@@ -2030,7 +2009,7 @@ plugin.init = function() {
       });
 
       if (thePlugins.isInstalled('erasedata')) {
-        $('#confimTorrentDelete h5').after(
+        $('#confirmTorrentDelete h5').after(
           '<div class="checkbox"><label id="deleteWithData">' +
           '<input type="checkbox"> ' + theUILang.Delete_data + '</label></div>');
 
@@ -2048,7 +2027,6 @@ plugin.init = function() {
         }
 
         if (thePlugins.isInstalled('_getdir')) {
-          plugin.getDirLoaded = true;
           $('#dirEditBlock').append('<input type="button" class="btn btn-outline-secondary btn-sm" id="showGetDir" onclick="mobile.showGetDir();" value="...">');
           $('#dataDirEditBlock').append('<input type="button" class="btn btn-outline-secondary btn-sm" id="showGetDirDataDir" onclick="mobile.showGetDir(\'#datadir_edit\');" value="...">');
         }

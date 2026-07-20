@@ -476,6 +476,6 @@ h5, #detailsTrackersPage a, #detailsTrackersPage .accordion-button, #detailsFile
 
 
 /*** Confirm Delete ***/
-#confimTorrentDelete #confirmText {
+#confirmTorrentDelete #confirmText {
   word-break: normal;
 }
