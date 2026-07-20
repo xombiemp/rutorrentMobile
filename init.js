@@ -135,17 +135,6 @@ var isEqual = function (a, b) {
   return true;
 };
 
-plugin.getRatioData = function(id)
-{
-  var curNo = -1;
-  var s = this.torrents[id].ratiogroup;
-  var arr = s.match(/rat_(\d{1,2})/);
-  if(arr && (arr.length>1)) {
-    curNo = arr[1];
-  }
-  return(curNo);
-};
-
 plugin.toggleDisplay = function(s) {
   if (s.css('display') == 'none') {
     s.css('display', '')
@@ -1425,6 +1414,10 @@ plugin.sendDataDir = function() {
 };
 
 /*** Optional plugin integrations (ratio, throttle, seedingtime) ***/
+// These only add the extra rows to the General tab. The ?action=setratio /
+// ?action=setthrottle requests are handled by the ratio and throttle
+// plugins' own rTorrentStub methods (both plugins stay enabled on mobile,
+// see the keepEnabled list in disableOthers).
 plugin.loadRatio = function () {
   var ratio = thePlugins.get("ratio");
   if (ratio.allStuffLoaded) {
@@ -1436,40 +1429,6 @@ plugin.loadRatio = function () {
     });
     $('#torrentRatioGrp').html(ratioHTML);
     $('#ratiogrp').children('td:first').text(theUILang.ratio);
-
-    rTorrentStub.prototype.setratio = function()
-    {
-      for(var i=0; i<this.vs.length; i++)
-      {
-        var wasNo = plugin.getRatioData(this.hashes[i]);
-        if(wasNo!=this.vs[i])
-        {
-          var cmd;
-          if(wasNo>=0)
-          {
-            cmd = new rXMLRPCCommand('view.set_not_visible');
-            cmd.addParameter("string",this.hashes[i]);
-            cmd.addParameter("string","rat_"+wasNo);
-            this.commands.push( cmd );
-            cmd = new rXMLRPCCommand('d.views.remove');
-            cmd.addParameter("string",this.hashes[i]);
-            cmd.addParameter("string","rat_"+wasNo);
-            this.commands.push( cmd );
-          }
-          if(this.vs[i]>=0)
-          {
-            cmd = new rXMLRPCCommand('d.views.push_back_unique');
-            cmd.addParameter("string",this.hashes[i]);
-            cmd.addParameter("string","rat_"+this.vs[i]);
-            this.commands.push( cmd );
-            cmd = new rXMLRPCCommand('view.set_visible');
-            cmd.addParameter("string",this.hashes[i]);
-            cmd.addParameter("string","rat_"+this.vs[i]);
-            this.commands.push( cmd );
-          }
-        }
-      }
-    }
   } else {
     setTimeout(function(){plugin.loadRatio()}, 1000);
   }
@@ -1486,33 +1445,6 @@ plugin.loadThrottle = function () {
     });
     $('#torrentChannel').html(throttleHTML);
     $('#throttle').children('td:first').text(theUILang.throttle);
-
-    rTorrentStub.prototype.setthrottle = function()
-    {
-      for(var i=0; i<this.vs.length; i++)
-      {
-        var status = theWebUI.getStatusIcon(mobile.torrents[this.hashes[i]]);
-        var needRestart = (status[1]==theUILang.Seeding) || (status[1]==theUILang.Downloading);
-        var name = (this.vs[i]>=0) ? "thr_"+this.vs[i] : "";
-        var cmd;
-        if(needRestart)
-        {
-          cmd = new rXMLRPCCommand('d.stop');
-          cmd.addParameter("string",this.hashes[i]);
-          this.commands.push( cmd );
-        }
-        cmd = new rXMLRPCCommand('d.set_throttle_name');
-        cmd.addParameter("string",this.hashes[i]);
-        cmd.addParameter("string",name);
-        this.commands.push( cmd );
-        if(needRestart)
-        {
-          cmd = new rXMLRPCCommand('d.start');
-          cmd.addParameter("string",this.hashes[i]);
-          this.commands.push( cmd );
-        }
-      }
-    }
   } else {
     setTimeout(function(){plugin.loadThrottle()}, 1000);
   }
