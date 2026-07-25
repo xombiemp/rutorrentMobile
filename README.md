@@ -1,5 +1,8 @@
 ## ruTorrent Mobile Plugin
 
+> [!IMPORTANT]
+> This plugin is now part of the official [ruTorrent](https://github.com/Novik/ruTorrent) distribution — it was merged upstream in [Novik/ruTorrent#3128](https://github.com/Novik/ruTorrent/pull/3128) and ships with releases after v5.3.10 as the bundled `mobile` plugin. Development continues there, so report issues and send pull requests to the ruTorrent repository. This repository is archived and read-only.
+
 A touch-friendly mobile interface for ruTorrent. When a phone or tablet is detected (or `?mobile=1` is added to the URL), it replaces the desktop UI with a compact single-column layout: torrent list with filtering and sorting, torrent details (general info, trackers, files, peers), adding torrents, speed limits and server status.
 
 ### Prereqs
